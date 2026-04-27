@@ -101,10 +101,10 @@ const DATA = {
   ] },
   classroom: { emoji: "🏫", label: "Classroom", color: "#4DABF7", words: [
     { jp: "えんぴつ", r: "Enpitsu", en: "Pencil", e: "✏️" },
-    { jp: "けしごむ", r: "Keshigomu", en: "Eraser", e: "🧹" },
+    { jp: "けしごむ", r: "Keshigomu", en: "Eraser", e: "🧽" },
     { jp: "ほん", r: "Hon", en: "Book", e: "📖" },
     { jp: "かばん", r: "Kaban", en: "Bag", e: "🎒" },
-    { jp: "つくえ", r: "Tsukue", en: "Desk", e: "🪑" },
+    { jp: "つくえ", r: "Tsukue", en: "Desk", e: "(╯°□°）╯︵ ┻━┻", eSize: 1.15 },
     { jp: "いす", r: "Isu", en: "Chair", e: "💺" },
     { jp: "こくばん", r: "Kokuban", en: "Blackboard", e: "🖊️" },
     { jp: "かみ", r: "Kami", en: "Paper", e: "📄" },

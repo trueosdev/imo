@@ -80,6 +80,8 @@ function renderCardMode(words) {
     const isFlipped = state.flippedByCategory[state.currentCategory].has(w.index);
     const romaji = state.showRomaji ? `<div class="c-romaji">${escapeHtml(w.r)}</div>` : "";
     const speakBtn = speakBtnHtml(w.jp, false);
+    const emojiSize = Number(w.eSize);
+    const emojiStyle = Number.isFinite(emojiSize) && emojiSize > 0 ? ` style="font-size:${emojiSize}rem"` : "";
     return `<div class="card${isFlipped ? " flipped is-learned" : ""}" role="button" tabindex="0" data-flip="${w.index}" style="animation-delay:${Math.min(i * 25, 240)}ms" aria-label="${escapeHtml(w.jp)}, ${escapeHtml(w.en)}. ${isFlipped ? "Marked learned." : "Tap to reveal meaning."}">
       <div class="card-inner">
         <div class="card-front">
@@ -90,7 +92,7 @@ function renderCardMode(words) {
         </div>
         <div class="card-back">
           <span class="learned-badge" aria-hidden="true">${CHECK_SVG}</span>
-          <div class="c-emoji" aria-hidden="true">${escapeHtml(w.e)}</div>
+          <div class="c-emoji" aria-hidden="true"${emojiStyle}>${escapeHtml(w.e)}</div>
           <div class="c-en">${escapeHtml(w.en)}</div>
           ${romaji}
         </div>
