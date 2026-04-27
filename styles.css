@@ -46,9 +46,9 @@
 
 [data-theme="dark"] {
   --bg: #1a0e08;
-  --bg-grad-1: #3d1d10;
-  --bg-grad-2: #2a1814;
-  --bg-grad-3: #1a0e08;
+  --bg-grad-1: #25130c;
+  --bg-grad-2: #20110b;
+  --bg-grad-3: #1b0f09;
   --surface: #2a1c14;
   --surface-glass: rgba(42, 28, 20, 0.78);
   --surface-muted: #3a2a20;
