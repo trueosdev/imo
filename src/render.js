@@ -1,0 +1,368 @@
+/* DOM rendering. Uses globals from data.js + state.js.
+ * Performance notes:
+ *  - Card flips do NOT call renderSection(); they call updateCardFlip() instead,
+ *    which only mutates classes on the affected card and updates the progress numbers.
+ *  - Full re-render only happens for category change, mode switch, search,
+ *    filter/shuffle toggles, or quiz state changes.
+ */
+
+/* Lucide volume-2 (used for the per-card and per-quiz speak button). */
+const SPEAKER_SVG = '<svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+const SPEAKER_SVG_LG = '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+/* Lucide check (used inside the gradient learned-badge on flipped cards). */
+const CHECK_SVG = '<svg class="lucide" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+function speakBtnHtml(text, large) {
+  if (!supportsTTS()) return "";
+  return `<button class="speak-btn" type="button" data-speak="${escapeHtml(text)}" aria-label="Play pronunciation for ${escapeHtml(text)}">${large ? SPEAKER_SVG_LG : SPEAKER_SVG}</button>`;
+}
+
+function updateProgress() {
+  document.getElementById("stat-today").textContent = state.todayCount;
+  document.getElementById("stat-total").textContent = totalLearned();
+  if (!state.currentCategory) {
+    document.getElementById("prog-label").textContent = "—";
+    document.getElementById("prog-fill").style.width = "0%";
+    document.getElementById("prog-pct").textContent = "—";
+    document.getElementById("stat-cat").textContent = "—";
+    return;
+  }
+  /* "all" pseudo-category: total = every word, done = sum of every flipped set. */
+  const total = state.currentCategory === "all"
+    ? ORDER.reduce((n, k) => n + DATA[k].words.length, 0)
+    : DATA[state.currentCategory].words.length;
+  const done = state.currentCategory === "all"
+    ? totalLearned()
+    : state.flippedByCategory[state.currentCategory].size;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById("prog-label").textContent = `${done} of ${total} learned`;
+  document.getElementById("prog-fill").style.width = `${pct}%`;
+  document.getElementById("prog-pct").textContent = `${pct}%`;
+  document.getElementById("stat-cat").textContent = `${done}/${total}`;
+}
+
+function renderCats() {
+  const root = document.getElementById("cats");
+  const buttons = [];
+
+  /* Quiz-only "All Categories" pseudo-button. Uses the brand accent so it
+   * reads as a meta option rather than a regular category. */
+  if (state.mode === "quiz") {
+    const active = state.currentCategory === "all";
+    const styleActive = active
+      ? `style="background:linear-gradient(135deg,var(--accent),var(--accent-3));color:#fff"`
+      : `style="color:var(--accent)"`;
+    buttons.push(
+      `<button class="cat-btn cat-btn-all${active ? " active" : ""}" ${styleActive} type="button" data-cat="all" aria-pressed="${active}"><span class="dot" aria-hidden="true"></span><span class="ico" aria-hidden="true">${lucide(ALL_ICON_INNER, 16)}</span>All</button>`
+    );
+  }
+
+  ORDER.forEach((k) => {
+    const d = DATA[k];
+    const active = k === state.currentCategory;
+    const styleActive = active
+      ? `style="background:linear-gradient(135deg,${d.color},${d.color}cc);color:#fff"`
+      : `style="color:${d.color}"`;
+    const iconInner = CATEGORY_ICONS[k] || DICTIONARY_HEADER_INNER;
+    buttons.push(
+      `<button class="cat-btn${active ? " active" : ""}" ${styleActive} type="button" data-cat="${k}" aria-pressed="${active}"><span class="dot" aria-hidden="true"></span><span class="ico" aria-hidden="true">${lucide(iconInner, 16)}</span>${escapeHtml(d.label)}</button>`
+    );
+  });
+
+  root.innerHTML = buttons.join("");
+}
+
+function renderCardMode(words) {
+  if (!words.length) {
+    return `<div class="empty-state"><span class="ico" aria-hidden="true">🌧️</span>No words match this filter.<br><span style="opacity:.7;font-weight:600">Try clearing search or turning off "Only unlearned".</span></div>`;
+  }
+  return `<div class="card-grid">${words.map((w, i) => {
+    const isFlipped = state.flippedByCategory[state.currentCategory].has(w.index);
+    const romaji = state.showRomaji ? `<div class="c-romaji">${escapeHtml(w.r)}</div>` : "";
+    const speakBtn = speakBtnHtml(w.jp, false);
+    return `<div class="card${isFlipped ? " flipped is-learned" : ""}" role="button" tabindex="0" data-flip="${w.index}" style="animation-delay:${Math.min(i * 25, 240)}ms" aria-label="${escapeHtml(w.jp)}, ${escapeHtml(w.en)}. ${isFlipped ? "Marked learned." : "Tap to reveal meaning."}">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="learned-badge" aria-hidden="true">${CHECK_SVG}</span>
+          <div class="c-jp">${escapeHtml(w.jp)}</div>
+          <div class="c-front-meta">${speakBtn}</div>
+          <div class="hint">tap to flip</div>
+        </div>
+        <div class="card-back">
+          <span class="learned-badge" aria-hidden="true">${CHECK_SVG}</span>
+          <div class="c-emoji" aria-hidden="true">${escapeHtml(w.e)}</div>
+          <div class="c-en">${escapeHtml(w.en)}</div>
+          ${romaji}
+        </div>
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function answerClass(option) {
+  if (!state.quiz.answered) {
+    return option === state.quiz.selected ? "selected" : "";
+  }
+  const current = currentWordsFiltered().find((w) => w.index === state.quiz.currentWordIndex);
+  if (!current) return "";
+  if (option === current.en) return "correct";
+  if (option === state.quiz.selected) return "wrong";
+  return "";
+}
+
+/* Lucide icons used everywhere a category is represented in chrome:
+ * the category chips, the cards/quiz section header, and every group
+ * header in the Dictionary view. The per-word emoji on card BACKS is
+ * the actual content of a flashcard, so those stay as-is. */
+function lucide(inner, size) {
+  return `<svg class="lucide" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+
+/* category id → inner SVG paths. Pulled directly from the Lucide library
+ * so they match the same visual language as the rest of the UI chrome. */
+const CATEGORY_ICONS = {
+  greetings: '<path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+  numbers: '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>',
+  colors: '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
+  animals: '<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>',
+  food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  body: '<circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>',
+  days: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+  family: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>',
+  classroom: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+  weather: '<path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>',
+  seasons: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  transport: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  clothes: '<path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>',
+  sports: '<path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>',
+  hobbies: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+  house: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  emotions: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>',
+  months: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+  jobs: '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>',
+  instruments: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  insects: '<path d="M12 20v-9"/><path d="M14 7a4 4 0 0 1 4 4v3a6 6 0 0 1-12 0v-3a4 4 0 0 1 4-4z"/><path d="M14.12 3.88 16 2"/><path d="M21 21a4 4 0 0 0-3.81-4"/><path d="M21 5a4 4 0 0 1-3.55 3.97"/><path d="M22 13h-4"/><path d="M3 21a4 4 0 0 1 3.81-4"/><path d="M3 5a4 4 0 0 0 3.55 3.97"/><path d="M6 13H2"/><path d="m8 2 1.88 1.88"/><path d="M9 7.13V6a3 3 0 1 1 6 0v1.13"/>',
+  japanesefood: '<path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/><path d="M18 12v.5"/><path d="M16 17.93a9.77 9.77 0 0 1 0-11.86"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/><path d="M10.46 7.26C10.2 5.88 9.17 4.24 8 3h5.8a2 2 0 0 1 1.98 1.67l.23 1.4"/><path d="m16.01 17.93-.23 1.4A2 2 0 0 1 13.8 21H9.5a5.96 5.96 0 0 0 1.49-3.98"/>',
+  places: '<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>',
+  adjectives: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  verbs: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+};
+/* Lucide library — used in the Dictionary section header. */
+const DICTIONARY_HEADER_INNER = '<path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/>';
+/* Lucide layers — represents the "All" pseudo-category (every category stacked). */
+const ALL_ICON_INNER = '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>';
+
+/* Build the dictionary view: every word from every category, with the
+ * current search query and "only unlearned" filter applied per group.
+ * Groups currently come from category structure; once words have a `jlpt`
+ * field we can swap this for JLPT-band groups without touching the row
+ * markup (each row is category-agnostic). */
+function buildDictionaryGroups() {
+  const q = state.searchQuery.trim().toLowerCase();
+  return ORDER.map((catKey) => {
+    const cat = DATA[catKey];
+    const flipped = state.flippedByCategory[catKey];
+    let words = cat.words.map((w, idx) => ({ ...w, catKey, idx, isLearned: flipped.has(idx) }));
+    if (q) {
+      words = words.filter((w) =>
+        [w.jp, w.r, w.en].some((v) => String(v).toLowerCase().includes(q))
+      );
+    }
+    if (state.filterUnlearnedOnly) {
+      words = words.filter((w) => !w.isLearned);
+    }
+    return { key: catKey, label: cat.label, emoji: cat.emoji, color: cat.color, words };
+  }).filter((g) => g.words.length > 0);
+}
+
+function renderDictionaryMode() {
+  const groups = buildDictionaryGroups();
+  const totalShown = groups.reduce((n, g) => n + g.words.length, 0);
+  const totalAll = ORDER.reduce((n, k) => n + DATA[k].words.length, 0);
+
+  const subParts = [];
+  if (state.searchQuery.trim()) {
+    subParts.push(`${totalShown} match${totalShown === 1 ? "" : "es"} for "${escapeHtml(state.searchQuery.trim())}"`);
+  } else {
+    subParts.push(`${totalShown} of ${totalAll} words`);
+  }
+  if (state.filterUnlearnedOnly) subParts.push("only unlearned");
+
+  const header = `<div class="sec-header" style="background:linear-gradient(135deg,var(--accent),var(--accent-3))">
+    <span class="sec-emoji" aria-hidden="true">${lucide(DICTIONARY_HEADER_INNER, 28)}</span>
+    <div class="sec-text">
+      <span class="sec-title">Dictionary</span>
+      <span class="sec-sub">${escapeHtml(subParts.join(" · "))}</span>
+    </div>
+  </div>`;
+
+  if (!groups.length) {
+    return header + `<div class="empty-state"><span class="ico" aria-hidden="true">🔍</span>No words match your search.<br><span style="opacity:.7;font-weight:600">Try a different term${state.filterUnlearnedOnly ? ' or turn off "Only unlearned"' : ""}.</span></div>`;
+  }
+
+  const groupsHtml = groups.map((g) => {
+    const rows = g.words.map((w) => {
+      const speakBtn = speakBtnHtml(w.jp, false);
+      const romaji = state.showRomaji ? `<div class="dict-romaji">${escapeHtml(w.r)}</div>` : "";
+      return `<li class="dict-row${w.isLearned ? " is-learned" : ""}">
+        <div class="dict-jp-block">
+          <div class="dict-jp">${escapeHtml(w.jp)}</div>
+          ${romaji}
+        </div>
+        <div class="dict-en">${escapeHtml(w.en)}</div>
+        ${speakBtn}
+      </li>`;
+    }).join("");
+    const iconInner = CATEGORY_ICONS[g.key] || DICTIONARY_HEADER_INNER;
+    return `<section class="dict-group">
+      <header class="dict-group-header" style="background:linear-gradient(135deg,${g.color},${g.color}cc)">
+        <span class="dict-group-emoji" aria-hidden="true">${lucide(iconInner, 22)}</span>
+        <span class="dict-group-label">${escapeHtml(g.label)}</span>
+        <span class="dict-group-count">${g.words.length} word${g.words.length === 1 ? "" : "s"}</span>
+      </header>
+      <ul class="dict-rows">${rows}</ul>
+    </section>`;
+  }).join("");
+
+  return header + `<div class="dict-section">${groupsHtml}</div>`;
+}
+
+function renderQuizMode(words) {
+  if (words.length < 1) {
+    return `<div class="empty-state"><span class="ico" aria-hidden="true">🎯</span>Need at least one word to quiz.<br><span style="opacity:.7;font-weight:600">Adjust filters to widen the pool.</span></div>`;
+  }
+  let current = words.find((w) => w.index === state.quiz.currentWordIndex);
+  if (!current) {
+    current = words[Math.floor(Math.random() * words.length)];
+    state.quiz.currentWordIndex = current.index;
+    state.quiz.selected = "";
+    state.quiz.answered = false;
+    state.quiz.options = buildOptions(current, words);
+  }
+  const speakBtn = speakBtnHtml(current.jp, true);
+  const accuracy = state.quiz.total ? Math.round((state.quiz.correct / state.quiz.total) * 100) : 0;
+  const checkDisabled = !state.quiz.selected || state.quiz.answered;
+  const letters = ["A", "B", "C", "D", "E", "F"];
+  return `<div class="quiz-card">
+    <div class="quiz-prompt">
+      <div class="quiz-prompt-label">What does this mean?</div>
+      <div class="quiz-jp">${escapeHtml(current.jp)} ${speakBtn}</div>
+      ${state.showRomaji ? `<div class="quiz-romaji">${escapeHtml(current.r)}</div>` : ""}
+    </div>
+    <div class="answers">${state.quiz.options.map((o, i) => `<button class="answer-btn ${answerClass(o)}" data-answer="${escapeHtml(o)}" data-letter="${letters[i] || ""}" type="button">${escapeHtml(o)}</button>`).join("")}</div>
+    <div class="quiz-actions">
+      <button id="check-answer" class="btn primary" type="button"${checkDisabled ? " disabled" : ""}>Check answer</button>
+      <button id="next-question" class="btn" type="button">Next question →</button>
+    </div>
+    <div class="score-bar">
+      <span class="label">Session score</span>
+      <span class="value">${state.quiz.correct} / ${state.quiz.total} <span class="accuracy">${state.quiz.total ? `· ${accuracy}%` : ""}</span></span>
+    </div>
+  </div>`;
+}
+
+function renderSection() {
+  /* Dictionary mode is category-agnostic: it always renders, even when
+   * state.currentCategory is null. */
+  if (state.mode === "dictionary") {
+    document.getElementById("vocab").innerHTML = renderDictionaryMode();
+    syncControlStates();
+    updateProgress();
+    saveState();
+    return;
+  }
+  if (!state.currentCategory) {
+    document.getElementById("vocab").innerHTML = "";
+    syncControlStates();
+    updateProgress();
+    saveState();
+    return;
+  }
+  const isAll = state.currentCategory === "all";
+  /* "all" has no entry in DATA — synthesize the bits the header needs. */
+  const totalWords = isAll
+    ? ORDER.reduce((n, k) => n + DATA[k].words.length, 0)
+    : DATA[state.currentCategory].words.length;
+  const headerLabel = isAll ? "All Categories" : DATA[state.currentCategory].label;
+  const headerBg = isAll
+    ? "linear-gradient(135deg,var(--accent),var(--accent-3))"
+    : `linear-gradient(135deg,${DATA[state.currentCategory].color},${DATA[state.currentCategory].color}99)`;
+  const headerIconInner = isAll
+    ? ALL_ICON_INNER
+    : (CATEGORY_ICONS[state.currentCategory] || DICTIONARY_HEADER_INNER);
+
+  const words = currentWordsFiltered();
+  const sub = state.mode === "quiz"
+    ? `Multiple choice · ${state.quiz.correct}/${state.quiz.total} this session`
+    : `${words.length} shown · ${totalWords} total`;
+  const header = `<div class="sec-header" style="background:${headerBg}">
+    <span class="sec-emoji" aria-hidden="true">${lucide(headerIconInner, 28)}</span>
+    <div class="sec-text"><span class="sec-title">${escapeHtml(headerLabel)}${state.mode === "quiz" ? " Quiz" : ""}</span><span class="sec-sub">${escapeHtml(sub)}</span></div>
+  </div>`;
+  const body = state.mode === "quiz" ? renderQuizMode(words) : renderCardMode(words);
+  document.getElementById("vocab").innerHTML = header + body;
+  syncControlStates();
+  updateProgress();
+  saveState();
+}
+
+function setChip(id, on) {
+  const el = document.getElementById(id);
+  el.dataset.state = on ? "on" : "off";
+  el.classList.toggle("on", on);
+  el.setAttribute("aria-pressed", on ? "true" : "false");
+}
+
+/* Pill position by mode: 0=Dictionary, 1=Cards, 2=Quiz. */
+const MODE_POS = { dictionary: 0, cards: 1, quiz: 2 };
+
+function syncControlStates() {
+  const app = document.querySelector(".app");
+  /* Two distinct app-level visibility states (see styles.css):
+   *   .dict-mode → on the Dictionary tab (cats/progress/shuffle/reset hide)
+   *   .welcome   → cards/quiz with no category yet (toolbar/progress hide) */
+  app.classList.toggle("dict-mode", state.mode === "dictionary");
+  app.classList.toggle(
+    "welcome",
+    state.mode !== "dictionary" && !state.currentCategory
+  );
+
+  ["dictionary", "cards", "quiz"].forEach((m) => {
+    const btn = document.getElementById(`mode-${m}`);
+    const isActive = state.mode === m;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+  document
+    .getElementById("mode-pill")
+    .setAttribute("data-pos", String(MODE_POS[state.mode] ?? 1));
+
+  setChip("toggle-unlearned", state.filterUnlearnedOnly);
+  setChip("shuffle-btn", state.shuffle);
+  setChip("toggle-romaji", state.showRomaji);
+
+  const search = document.getElementById("search-input");
+  if (search.value !== state.searchQuery) search.value = state.searchQuery;
+  document.getElementById("search-clear").classList.toggle("visible", state.searchQuery.length > 0);
+
+  document.getElementById("theme-toggle").setAttribute(
+    "aria-label",
+    `Switch to ${state.theme === "dark" ? "light" : "dark"} mode`
+  );
+  document.documentElement.setAttribute("data-theme", state.theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", state.theme === "dark" ? "#1a0e08" : "#fff7ee");
+}
+
+/* Partial DOM update for a single card flip. Avoids the cost of
+ * rebuilding the entire grid. Called from the click and keyboard
+ * handlers in app.js. */
+function updateCardFlip(cardEl, isLearned) {
+  cardEl.classList.toggle("flipped", isLearned);
+  cardEl.classList.toggle("is-learned", isLearned);
+  const label = cardEl.getAttribute("aria-label") || "";
+  cardEl.setAttribute(
+    "aria-label",
+    label.replace(/(Tap to reveal meaning\.|Marked learned\.)/, isLearned ? "Marked learned." : "Tap to reveal meaning.")
+  );
+}
