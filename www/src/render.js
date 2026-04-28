@@ -179,27 +179,9 @@ function buildDictionaryGroups() {
 
 function renderDictionaryMode() {
   const groups = buildDictionaryGroups();
-  const totalShown = groups.reduce((n, g) => n + g.words.length, 0);
-  const totalAll = ORDER.reduce((n, k) => n + DATA[k].words.length, 0);
-
-  const subParts = [];
-  if (state.searchQuery.trim()) {
-    subParts.push(`${totalShown} match${totalShown === 1 ? "" : "es"} for "${escapeHtml(state.searchQuery.trim())}"`);
-  } else {
-    subParts.push(`${totalShown} of ${totalAll} words`);
-  }
-  if (state.filterUnlearnedOnly) subParts.push("only unlearned");
-
-  const header = `<div class="sec-header" style="background:linear-gradient(135deg,var(--accent),var(--accent-3))">
-    <span class="sec-emoji" aria-hidden="true">${lucide(DICTIONARY_HEADER_INNER, 28)}</span>
-    <div class="sec-text">
-      <span class="sec-title">Dictionary</span>
-      <span class="sec-sub">${escapeHtml(subParts.join(" · "))}</span>
-    </div>
-  </div>`;
 
   if (!groups.length) {
-    return header + `<div class="empty-state"><span class="ico" aria-hidden="true">🔍</span>No words match your search.<br><span style="opacity:.7;font-weight:600">Try a different term${state.filterUnlearnedOnly ? ' or turn off "Only unlearned"' : ""}.</span></div>`;
+    return `<div class="empty-state"><span class="ico" aria-hidden="true">🔍</span>No words match your search.<br><span style="opacity:.7;font-weight:600">Try a different term${state.filterUnlearnedOnly ? ' or turn off "Only unlearned"' : ""}.</span></div>`;
   }
 
   const groupsHtml = groups.map((g) => {
@@ -226,7 +208,203 @@ function renderDictionaryMode() {
     </section>`;
   }).join("");
 
-  return header + `<div class="dict-section">${groupsHtml}</div>`;
+  return `<div class="dict-section">${groupsHtml}</div>`;
+}
+
+/* Each column is ∅ k s t n h m y r w — five vowel slots per column (null = blank). */
+const GOJUON_COL_LABELS = ["∅", "k", "s", "t", "n", "h", "m", "y", "r", "w"];
+const GOJUON_ROW_LABELS = ["a", "i", "u", "e", "o"];
+
+const GOJUON_HIRA_COLS = [
+  [
+    ["あ", "a"],
+    ["い", "i"],
+    ["う", "u"],
+    ["え", "e"],
+    ["お", "o"],
+  ],
+  [
+    ["か", "ka"],
+    ["き", "ki"],
+    ["く", "ku"],
+    ["け", "ke"],
+    ["こ", "ko"],
+  ],
+  [
+    ["さ", "sa"],
+    ["し", "shi"],
+    ["す", "su"],
+    ["せ", "se"],
+    ["そ", "so"],
+  ],
+  [
+    ["た", "ta"],
+    ["ち", "chi"],
+    ["つ", "tsu"],
+    ["て", "te"],
+    ["と", "to"],
+  ],
+  [
+    ["な", "na"],
+    ["に", "ni"],
+    ["ぬ", "nu"],
+    ["ね", "ne"],
+    ["の", "no"],
+  ],
+  [
+    ["は", "ha"],
+    ["ひ", "hi"],
+    ["ふ", "fu"],
+    ["へ", "he"],
+    ["ほ", "ho"],
+  ],
+  [
+    ["ま", "ma"],
+    ["み", "mi"],
+    ["む", "mu"],
+    ["め", "me"],
+    ["も", "mo"],
+  ],
+  [
+    ["や", "ya"],
+    null,
+    ["ゆ", "yu"],
+    null,
+    ["よ", "yo"],
+  ],
+  [
+    ["ら", "ra"],
+    ["り", "ri"],
+    ["る", "ru"],
+    ["れ", "re"],
+    ["ろ", "ro"],
+  ],
+  [
+    ["わ", "wa"],
+    null,
+    null,
+    null,
+    ["を", "wo"],
+  ],
+];
+
+const GOJUON_KATA_COLS = [
+  [
+    ["ア", "a"],
+    ["イ", "i"],
+    ["ウ", "u"],
+    ["エ", "e"],
+    ["オ", "o"],
+  ],
+  [
+    ["カ", "ka"],
+    ["キ", "ki"],
+    ["ク", "ku"],
+    ["ケ", "ke"],
+    ["コ", "ko"],
+  ],
+  [
+    ["サ", "sa"],
+    ["シ", "shi"],
+    ["ス", "su"],
+    ["セ", "se"],
+    ["ソ", "so"],
+  ],
+  [
+    ["タ", "ta"],
+    ["チ", "chi"],
+    ["ツ", "tsu"],
+    ["テ", "te"],
+    ["ト", "to"],
+  ],
+  [
+    ["ナ", "na"],
+    ["ニ", "ni"],
+    ["ヌ", "nu"],
+    ["ネ", "ne"],
+    ["ノ", "no"],
+  ],
+  [
+    ["ハ", "ha"],
+    ["ヒ", "hi"],
+    ["フ", "fu"],
+    ["ヘ", "he"],
+    ["ホ", "ho"],
+  ],
+  [
+    ["マ", "ma"],
+    ["ミ", "mi"],
+    ["ム", "mu"],
+    ["メ", "me"],
+    ["モ", "mo"],
+  ],
+  [
+    ["ヤ", "ya"],
+    null,
+    ["ユ", "yu"],
+    null,
+    ["ヨ", "yo"],
+  ],
+  [
+    ["ラ", "ra"],
+    ["リ", "ri"],
+    ["ル", "ru"],
+    ["レ", "re"],
+    ["ロ", "ro"],
+  ],
+  [
+    ["ワ", "wa"],
+    null,
+    null,
+    null,
+    ["ヲ", "wo"],
+  ],
+];
+
+function renderGojuonTable(title, cols, scriptTag) {
+  const nChar = scriptTag === "hr" ? "ん" : "ン";
+  const head =
+    `<thead><tr><th class="kana-corner" scope="col"></th>` +
+    GOJUON_COL_LABELS.map((c) => `<th scope="col">${escapeHtml(c)}</th>`).join("") +
+    `</tr></thead>`;
+  const bodyRows = [];
+  for (let ri = 0; ri < 5; ri++) {
+    const cells = cols.map((col) => {
+      const pair = col[ri];
+      if (!pair) {
+        return `<td class="kana-empty" aria-hidden="true"></td>`;
+      }
+      const jp = pair[0];
+      const roma = pair[1];
+      const speakAttr = supportsTTS() ? ` data-speak="${escapeHtml(jp)}"` : "";
+      const aria =
+        escapeHtml(jp) + (state.showRomaji ? ", " + escapeHtml(roma) : "");
+      const romaHtml = state.showRomaji ? `<span class="kana-roma">${escapeHtml(roma)}</span>` : "";
+      return `<td class="kana-cell"><button type="button" class="kana-char"${speakAttr} aria-label="${aria}">${escapeHtml(jp)}</button>${romaHtml}</td>`;
+    });
+    bodyRows.push(
+      `<tr><th scope="row" class="kana-row-label">${escapeHtml(GOJUON_ROW_LABELS[ri])}</th>${cells.join("")}</tr>`
+    );
+  }
+  const nSpeak = supportsTTS() ? ` data-speak="${escapeHtml(nChar)}"` : "";
+  const nBtn = supportsTTS()
+    ? `<button type="button" class="kana-n-char"${nSpeak} aria-label="${escapeHtml(nChar)}, n">${escapeHtml(nChar)}</button>`
+    : `<span class="kana-n-char">${escapeHtml(nChar)}</span>`;
+  const nRoma = state.showRomaji ? `<span class="kana-roma">n</span>` : "";
+  return `<section class="kana-chart-block" aria-labelledby="kana-title-${scriptTag}">
+    <h3 class="kana-chart-title" id="kana-title-${scriptTag}">${escapeHtml(title)}</h3>
+    <div class="kana-chart-scroll">
+      <table class="kana-chart">${head}<tbody>${bodyRows.join("")}</tbody></table>
+    </div>
+    <div class="kana-n-row"><span class="kana-n-label">n</span>${nBtn}${nRoma}</div>
+  </section>`;
+}
+
+function renderKanaMode() {
+  const charts =
+    renderGojuonTable("Hiragana", GOJUON_HIRA_COLS, "hr") +
+    renderGojuonTable("Katakana", GOJUON_KATA_COLS, "kt");
+  return `<div class="kana-section">${charts}</div>`;
 }
 
 function renderQuizMode(words) {
@@ -264,10 +442,16 @@ function renderQuizMode(words) {
 }
 
 function renderSection() {
-  /* Dictionary mode is category-agnostic: it always renders, even when
-   * state.currentCategory is null. */
+  /* Dictionary and Kana are category-agnostic: they always render. */
   if (state.mode === "dictionary") {
     document.getElementById("vocab").innerHTML = renderDictionaryMode();
+    syncControlStates();
+    updateProgress();
+    saveState();
+    return;
+  }
+  if (state.mode === "kana") {
+    document.getElementById("vocab").innerHTML = renderKanaMode();
     syncControlStates();
     updateProgress();
     saveState();
@@ -280,29 +464,9 @@ function renderSection() {
     saveState();
     return;
   }
-  const isAll = state.currentCategory === "all";
-  /* "all" has no entry in DATA — synthesize the bits the header needs. */
-  const totalWords = isAll
-    ? ORDER.reduce((n, k) => n + DATA[k].words.length, 0)
-    : DATA[state.currentCategory].words.length;
-  const headerLabel = isAll ? "All Categories" : DATA[state.currentCategory].label;
-  const headerBg = isAll
-    ? "linear-gradient(135deg,var(--accent),var(--accent-3))"
-    : `linear-gradient(135deg,${DATA[state.currentCategory].color},${DATA[state.currentCategory].color}99)`;
-  const headerIconInner = isAll
-    ? ALL_ICON_INNER
-    : (CATEGORY_ICONS[state.currentCategory] || DICTIONARY_HEADER_INNER);
-
   const words = currentWordsFiltered();
-  const sub = state.mode === "quiz"
-    ? `Multiple choice · ${state.quiz.correct}/${state.quiz.total} this session`
-    : `${words.length} shown · ${totalWords} total`;
-  const header = `<div class="sec-header" style="background:${headerBg}">
-    <span class="sec-emoji" aria-hidden="true">${lucide(headerIconInner, 28)}</span>
-    <div class="sec-text"><span class="sec-title">${escapeHtml(headerLabel)}${state.mode === "quiz" ? " Quiz" : ""}</span><span class="sec-sub">${escapeHtml(sub)}</span></div>
-  </div>`;
   const body = state.mode === "quiz" ? renderQuizMode(words) : renderCardMode(words);
-  document.getElementById("vocab").innerHTML = header + body;
+  document.getElementById("vocab").innerHTML = body;
   syncControlStates();
   updateProgress();
   saveState();
@@ -315,21 +479,22 @@ function setChip(id, on) {
   el.setAttribute("aria-pressed", on ? "true" : "false");
 }
 
-/* Pill position by mode: 0=Dictionary, 1=Cards, 2=Quiz. */
-const MODE_POS = { dictionary: 0, cards: 1, quiz: 2 };
+/* Pill position by mode: 0–3 = Dictionary, Cards, Quiz, Kana. */
+const MODE_POS = { dictionary: 0, cards: 1, quiz: 2, kana: 3 };
 
 function syncControlStates() {
   const app = document.querySelector(".app");
-  /* Two distinct app-level visibility states (see styles.css):
-   *   .dict-mode → on the Dictionary tab (cats/progress/shuffle/reset hide)
-   *   .welcome   → cards/quiz with no category yet (toolbar/progress hide) */
+  /* App-level visibility (see styles.css):
+   *   .dict-mode / .kana-mode → reference tabs (cats/progress/shuffle/reset hide)
+   *   .welcome → cards or quiz with no category yet (toolbar/progress hide) */
   app.classList.toggle("dict-mode", state.mode === "dictionary");
+  app.classList.toggle("kana-mode", state.mode === "kana");
   app.classList.toggle(
     "welcome",
-    state.mode !== "dictionary" && !state.currentCategory
+    (state.mode === "cards" || state.mode === "quiz") && !state.currentCategory
   );
 
-  ["dictionary", "cards", "quiz"].forEach((m) => {
+  ["dictionary", "cards", "quiz", "kana"].forEach((m) => {
     const btn = document.getElementById(`mode-${m}`);
     const isActive = state.mode === m;
     btn.classList.toggle("active", isActive);

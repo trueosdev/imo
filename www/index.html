@@ -9,9 +9,6 @@
 <meta name="format-detection" content="telephone=no">
 <title>imo - Learn Japanese</title>
 <link rel="icon" type="image/png" href="favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -45,7 +42,7 @@
   </section>
 
   <div class="mode-switch" role="tablist" aria-label="Study mode">
-    <!-- data-pos drives the sliding pill: 0=Dictionary, 1=Cards, 2=Quiz.
+    <!-- data-pos drives the sliding pill: 0–3 = Dictionary, Cards, Quiz, Kana.
          Default is 1 (Cards) since that's the default state.mode. -->
     <span class="mode-pill" id="mode-pill" data-pos="1" aria-hidden="true"></span>
     <button class="mode-btn" id="mode-dictionary" role="tab" aria-selected="false" type="button">
@@ -56,6 +53,9 @@
     </button>
     <button class="mode-btn" id="mode-quiz" role="tab" aria-selected="false" type="button">
       <svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Quiz
+    </button>
+    <button class="mode-btn" id="mode-kana" role="tab" aria-selected="false" type="button">
+      <span class="kana-tab-glyph" aria-hidden="true">あ</span>Kana
     </button>
   </div>
 

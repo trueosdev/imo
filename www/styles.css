@@ -15,6 +15,22 @@
  *   cream  #fff7ee  →  background
  * Supporting neutrals are warm-tinted (toasted browns, not purple/grey)
  * so they sit naturally against the brand colors. */
+@font-face {
+  font-family: "LINESeedJP";
+  src: url("fonts/LINESeedJP_OTF_Rg.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "LINESeedJP";
+  src: url("fonts/LINESeedJP_OTF_Bd.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #fff7ee;
   --bg-grad-1: #ffd6c2;
@@ -74,7 +90,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Nunito', system-ui, sans-serif;
+  font-family: "LINESeedJP", system-ui, sans-serif;
   color: var(--text);
   min-height: 100vh;
   min-height: 100svh;
@@ -252,7 +268,7 @@ button { border: 0; background: transparent; cursor: pointer; }
 }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 0.45rem;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: "LINESeedJP", system-ui, sans-serif;
   font-size: 0.72rem; font-weight: 700;
   color: var(--text-soft);
   background: var(--surface-glass);
@@ -312,8 +328,8 @@ button { border: 0; background: transparent; cursor: pointer; }
 .stat-value.accent { color: var(--accent); }
 
 /* ---------- Mode segmented control ---------- *
- * Three modes: Dictionary, Cards, Quiz. Equal-flex buttons so the
- * sliding pill width math (1/3 of inner area) always lines up. */
+ * Four modes: Dictionary, Cards, Quiz, Kana. Equal-flex buttons so the
+ * sliding pill width math (1/4 of inner area) lines up. */
 .mode-switch {
   position: relative;
   display: flex;
@@ -322,7 +338,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   border-radius: 999px;
   padding: 5px;
   box-shadow: var(--shadow-sm);
-  width: min(100%, 30em);
+  width: min(100%, 38em);
   margin: 0 auto 1.1rem;
 }
 .mode-btn {
@@ -331,8 +347,8 @@ button { border: 0; background: transparent; cursor: pointer; }
   flex: 1;
   min-width: 0;
   font-weight: 800;
-  font-size: 0.86rem;
-  padding: 0.55rem 1rem;
+  font-size: clamp(0.72rem, 2.6vw, 0.86rem);
+  padding: 0.55rem 0.65rem;
   border-radius: 999px;
   color: var(--muted);
   display: inline-flex;
@@ -348,7 +364,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   top: 5px;
   bottom: 5px;
   left: 5px;
-  width: calc((100% - 10px) / 3);
+  width: calc((100% - 10px) / 4);
   background: linear-gradient(135deg, var(--accent), var(--accent-3));
   border-radius: 999px;
   box-shadow: var(--shadow-glow);
@@ -358,6 +374,7 @@ button { border: 0; background: transparent; cursor: pointer; }
 .mode-pill[data-pos="0"] { transform: translateX(0); }
 .mode-pill[data-pos="1"] { transform: translateX(100%); }
 .mode-pill[data-pos="2"] { transform: translateX(200%); }
+.mode-pill[data-pos="3"] { transform: translateX(300%); }
 
 /* ---------- Toolbar ---------- *
  * One of two surfaces that uses backdrop-filter; the rest use solid surface
@@ -366,13 +383,13 @@ button { border: 0; background: transparent; cursor: pointer; }
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.6rem;
-  background: var(--surface-glass);
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
-  backdrop-filter: blur(14px) saturate(1.3);
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border: none;
   border-radius: var(--radius-lg);
   padding: 0.85rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
   margin-bottom: 1rem;
 }
 .search-wrap { position: relative; }
@@ -387,7 +404,7 @@ button { border: 0; background: transparent; cursor: pointer; }
 }
 .search-input {
   width: 100%;
-  background: var(--surface-muted);
+  background: var(--surface);
   border: none;
   border-radius: 14px;
   padding: 0.78rem 2.2rem 0.78rem 2.4rem;
@@ -635,46 +652,6 @@ button { border: 0; background: transparent; cursor: pointer; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Section header ---------- */
-.sec-header {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 1rem 1.15rem;
-  border-radius: var(--radius-lg);
-  color: #fff;
-  margin-bottom: 1.1rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-}
-.sec-header::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.35), transparent 60%);
-  pointer-events: none;
-}
-.sec-emoji {
-  font-size: 2rem;
-  line-height: 1;
-  width: 54px;
-  height: 54px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 16px;
-  flex-shrink: 0;
-}
-.sec-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.sec-title {
-  font-size: 1.25rem;
-  font-weight: 900;
-  letter-spacing: -0.015em;
-  line-height: 1.1;
-}
-.sec-sub { font-size: 0.78rem; opacity: 0.92; font-weight: 600; margin-top: 0.15rem; }
-
 /* ---------- Card grid ---------- *
  * Predictable column counts at each breakpoint avoids the auto-fill
  * "5 vs 6 columns" jitter at common desktop widths. */
@@ -745,7 +722,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   background: linear-gradient(160deg, var(--surface) 0%, var(--surface-muted) 100%);
 }
 .c-jp {
-  font-family: 'Noto Serif JP', serif;
+  font-family: "LINESeedJP", system-ui, sans-serif;
   font-size: 1.85rem;
   font-weight: 700;
   letter-spacing: -0.005em;
@@ -828,7 +805,6 @@ button { border: 0; background: transparent; cursor: pointer; }
   box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
-  animation: cardIn 0.35s ease both;
 }
 .quiz-card::before {
   content: "";
@@ -852,7 +828,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   position: relative;
 }
 .quiz-jp {
-  font-family: 'Noto Serif JP', serif;
+  font-family: "LINESeedJP", system-ui, sans-serif;
   font-size: clamp(2.1rem, 7vw, 3.2rem);
   font-weight: 900;
   letter-spacing: -0.015em;
@@ -903,6 +879,9 @@ button { border: 0; background: transparent; cursor: pointer; }
   transition: background-color 0.15s ease, transform 0.15s ease;
   position: relative;
 }
+[data-theme="dark"] .answer-btn {
+  background: #3c3c3c;
+}
 .answer-btn::before {
   content: attr(data-letter);
   display: grid;
@@ -952,12 +931,12 @@ button { border: 0; background: transparent; cursor: pointer; }
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
   border: none;
   background: var(--surface-muted);
   color: var(--text);
 }
-.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:hover:not(:disabled) { box-shadow: var(--shadow-sm); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-3));
@@ -965,6 +944,15 @@ button { border: 0; background: transparent; cursor: pointer; }
   box-shadow: var(--shadow-glow);
 }
 .btn.primary:hover:not(:disabled) { box-shadow: 0 14px 32px rgba(215, 119, 113, 0.35); }
+
+[data-theme="dark"] #next-question.btn {
+  background: #fff7ee;
+  color: #161616;
+}
+[data-theme="dark"] #next-question.btn:hover:not(:disabled) {
+  background: #ffeadd;
+  box-shadow: 0 6px 18px rgba(255, 247, 238, 0.18);
+}
 
 .score-bar {
   display: flex;
@@ -1003,9 +991,11 @@ button { border: 0; background: transparent; cursor: pointer; }
  *                Hide the toolbar + progress card; categories grid stays so
  *                they can pick something.
  *
- *   .dict-mode → user is on the Dictionary tab. Categories grid + progress
- *                card don't apply; shuffle/reset chips don't apply either.
- *                Toolbar (search, romaji, only-unlearned) stays useful.
+ *   .dict-mode → Dictionary tab: categories grid + progress hidden;
+ *                shuffle/reset hidden; search + filters stay useful.
+ *
+ *   .kana-mode → Kana tab: same layout hides as Dictionary, plus search and
+ *                “only unlearned” (charts are static). Romaji toggle remains.
  */
 .app.welcome .toolbar,
 .app.welcome .progress-card {
@@ -1014,7 +1004,15 @@ button { border: 0; background: transparent; cursor: pointer; }
 .app.dict-mode .cats-wrap,
 .app.dict-mode .progress-card,
 .app.dict-mode #shuffle-btn,
-.app.dict-mode #reset-category {
+.app.dict-mode #reset-category,
+.app.kana-mode .cats-wrap,
+.app.kana-mode .progress-card,
+.app.kana-mode #shuffle-btn,
+.app.kana-mode #reset-category {
+  display: none;
+}
+.app.kana-mode .search-wrap,
+.app.kana-mode #toggle-unlearned {
   display: none;
 }
 
@@ -1090,7 +1088,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   min-width: 0;
 }
 .dict-jp {
-  font-family: 'Noto Serif JP', serif;
+  font-family: "LINESeedJP", system-ui, sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text);
@@ -1138,6 +1136,144 @@ button { border: 0; background: transparent; cursor: pointer; }
     max-width: none;
   }
   .dict-row .speak-btn { grid-column: 2; grid-row: 1; }
+}
+
+/* ---------- Kana mode (gojuon charts) ---------- */
+.kana-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.kana-chart-block {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+.kana-chart-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.kana-chart-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -0.25rem;
+  padding: 0 0.25rem;
+}
+.kana-chart {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.kana-chart thead th {
+  padding: 0.35rem 0.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.kana-corner {
+  width: 1.75rem;
+}
+.kana-chart tbody th.kana-row-label {
+  padding: 0.35rem 0.35rem 0.35rem 0;
+  font-weight: 800;
+  color: var(--muted);
+  text-align: right;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.kana-chart td {
+  padding: 0.2rem 0.15rem;
+  vertical-align: middle;
+}
+.kana-cell {
+  text-align: center;
+}
+.kana-char {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.2rem 0.15rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: "LINESeedJP", system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.1;
+  border-radius: 8px;
+  transition: transform 0.02s ease, color 0.12s ease;
+}
+.kana-char:hover {
+  transform: scale(1.05);
+}
+.kana-empty {
+  min-width: 1.5rem;
+}
+.kana-roma {
+  display: block;
+  margin-top: 0.08rem;
+  font-family: "LINESeedJP", system-ui, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.kana-n-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--surface-muted);
+}
+.kana-n-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  min-width: 1rem;
+  text-align: right;
+}
+.kana-n-char {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.25rem 0.45rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: "LINESeedJP", system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: 8px;
+  transition: transform 0.12s ease;
+}
+button.kana-n-char:hover {
+  transform: scale(1.05);
+}
+span.kana-n-char {
+  cursor: default;
+  font-family: "LINESeedJP", system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.kana-n-row .kana-roma {
+  margin-top: 0;
 }
 
 /* ---------- Focus / a11y ---------- */
@@ -1189,7 +1325,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   border: none;
   border-radius: 999px;
   color: #fff;
-  font-family: 'Noto Sans JP', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: "LINESeedJP", system-ui, sans-serif;
   font-size: 0.98rem;
   font-weight: 700;
   letter-spacing: 0.01em;

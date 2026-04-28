@@ -170,9 +170,9 @@ function setupEvents() {
     state.quiz.lastWordIndex = -1;
     renderCats();
     renderSection();
-    /* Dictionary mode is category-agnostic, so the "let's go" toast
-     * doesn't apply there. */
-    if (state.mode !== "dictionary") showGoToast();
+    /* Dictionary / Kana don't use the category picker flow; toast is for
+     * Cards / Quiz after picking a category. */
+    if (state.mode === "cards" || state.mode === "quiz") showGoToast();
   });
   setupCatLiquidHover();
 
@@ -269,6 +269,14 @@ function setupEvents() {
       smoothScrollTo(catsEl);
     }
   });
+  document.getElementById("mode-kana").addEventListener("click", () => {
+    state.mode = "kana";
+    leavingQuizCleanup();
+    renderCats();
+    renderSection();
+    smoothScrollTo(vocabEl);
+    hideGoToast();
+  });
 
   const search = document.getElementById("search-input");
   search.addEventListener("input", (e) => {
@@ -338,8 +346,14 @@ function setupEvents() {
       renderCats();
       renderSection();
     }
+    if (e.key === "4") {
+      state.mode = "kana";
+      leavingQuizCleanup();
+      renderCats();
+      renderSection();
+    }
     if (state.mode === "quiz") {
-      // A-D pick answers (1/2/3 are reserved for mode switching above).
+      // A-D pick answers; digits 1–4 switch modes.
       const map = { a: 0, b: 1, c: 2, d: 3 };
       const k = e.key.toLowerCase();
       if (k in map && state.quiz.options[map[k]] !== undefined && !state.quiz.answered) {

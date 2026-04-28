@@ -80,7 +80,7 @@ function loadState() {
      * the welcome state until the user picks a category. Per-category flip
      * progress IS still restored below, so picking the same category later
      * brings their learned cards back. */
-    state.mode = ["dictionary", "cards", "quiz"].includes(parsed.mode) ? parsed.mode : "cards";
+    state.mode = ["dictionary", "cards", "quiz", "kana"].includes(parsed.mode) ? parsed.mode : "cards";
     state.searchQuery = typeof parsed.searchQuery === "string" ? parsed.searchQuery : "";
     state.filterUnlearnedOnly = !!parsed.filterUnlearnedOnly;
     state.shuffle = !!parsed.shuffle;
