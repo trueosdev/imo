@@ -132,38 +132,33 @@ function supportsTTS() {
   return !ttsBlocked && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 }
 
-function hasJapaneseVoice(voices) {
-  return voices.some((v) => {
-    const lang = String(v.lang || "").toLowerCase();
-    return lang.startsWith("ja");
-  });
-}
-
-function enforceNativeJapaneseVoiceGuard() {
+function getJapaneseVoice() {
   if (!isNativeCapacitorPlatform() || !("speechSynthesis" in window)) return;
   const voices = window.speechSynthesis.getVoices();
-  if (!voices.length) return;
+  if (!voices.length) return null;
+  return voices.find((v) => String(v.lang || "").toLowerCase().startsWith("ja")) || null;
+}
 
-  const missingJapaneseVoice = !hasJapaneseVoice(voices);
-  ttsBlocked = missingJapaneseVoice;
-  if (missingJapaneseVoice && !ttsWarningLogged) {
+function blockNativeTTS() {
+  ttsBlocked = true;
+  if (!ttsWarningLogged) {
     console.warn("No Japanese TTS voice available; speech buttons are disabled.");
     ttsWarningLogged = true;
   }
   if (typeof renderSection === "function") renderSection();
 }
 
-function setupTTSGuard() {
-  if (!isNativeCapacitorPlatform() || !("speechSynthesis" in window)) return;
-  enforceNativeJapaneseVoiceGuard();
-  window.speechSynthesis.addEventListener("voiceschanged", enforceNativeJapaneseVoiceGuard);
-}
-
 function speak(text) {
   if (!supportsTTS()) return;
+  const japaneseVoice = getJapaneseVoice();
+  if (isNativeCapacitorPlatform() && !japaneseVoice) {
+    blockNativeTTS();
+    return;
+  }
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "ja-JP";
+  if (japaneseVoice) u.voice = japaneseVoice;
   u.rate = 0.95;
   speechSynthesis.speak(u);
 }
@@ -244,5 +239,3 @@ function buildOptions(current, pool) {
   }
   return [current.en, ...selected].sort(() => Math.random() - 0.5);
 }
-
-setupTTSGuard();

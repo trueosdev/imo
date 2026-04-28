@@ -35,15 +35,18 @@
     }
   };
 
-  syncStatusBarStyleToTheme();
-  new MutationObserver(syncStatusBarStyleToTheme).observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-  });
+  function startNativeBridge() {
+    syncStatusBarStyleToTheme();
+    new MutationObserver(syncStatusBarStyleToTheme).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    hideNativeSplash();
+  }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", hideNativeSplash, { once: true });
+    document.addEventListener("DOMContentLoaded", startNativeBridge, { once: true });
   } else {
-    hideNativeSplash();
+    startNativeBridge();
   }
 })();

@@ -45,13 +45,13 @@
 }
 
 [data-theme="dark"] {
-  --bg: #1a0e08;
-  --bg-grad-1: #25130c;
-  --bg-grad-2: #20110b;
-  --bg-grad-3: #1b0f09;
-  --surface: #2a1c14;
-  --surface-glass: rgba(42, 28, 20, 0.78);
-  --surface-muted: #3a2a20;
+  --bg: #161616;
+  --bg-grad-1: #212121;
+  --bg-grad-2: #252525;
+  --bg-grad-3: #111111;
+  --surface: #323232;
+  --surface-glass: rgba(32, 32, 32, 0.78);
+  --surface-muted: #333333;
   --text: #fff7ee;
   --text-soft: #e0cab5;
   --muted: #b09080;
