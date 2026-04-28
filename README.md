@@ -72,3 +72,33 @@ The app was tuned for low-end machines and Firefox specifically:
 - Cards use `contain: layout paint` so flipping one card cannot invalidate
   layout/paint of its siblings.
 - All animations honor `prefers-reduced-motion`.
+
+## Mobile (Capacitor)
+
+The app is wrapped with Capacitor for iOS and Android while preserving the static web flow.
+Web assets now live under `www/`; you can still open `www/index.html` directly with `file://`.
+
+### One-time setup
+
+```bash
+npm install
+npx cap sync
+```
+
+### Run locally
+
+```bash
+npm run web        # static preview at http://localhost:5173
+npm run ios        # opens Xcode project
+npm run android    # opens Android Studio project
+```
+
+In Xcode/Android Studio, choose a simulator/device and press Run.
+
+### After editing web files
+
+Any time you change files in `www/`, re-sync native projects:
+
+```bash
+npx cap sync
+```

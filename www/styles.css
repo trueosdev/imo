@@ -1,0 +1,1242 @@
+/* Japanese Vocab — stylesheet
+ * Performance notes:
+ *  - backdrop-filter is intentionally limited to 2 surfaces (toolbar, progress card)
+ *    because Firefox creates a new compositor layer per blurred surface.
+ *  - The body has a static gradient, no animated drift, no dot-grid pseudo
+ *    (those caused continuous repaints in Firefox).
+ *  - The progress bar uses a static gradient, not an infinite shimmer.
+ *  - Cards use `contain: layout paint` so flipping one does not invalidate
+ *    layout/paint of siblings.
+ */
+
+/* Brand palette pulled directly from the imo logo:
+ *   coral  #d77771  →  primary accent
+ *   orange #ff7100  →  secondary / hot accent
+ *   cream  #fff7ee  →  background
+ * Supporting neutrals are warm-tinted (toasted browns, not purple/grey)
+ * so they sit naturally against the brand colors. */
+:root {
+  --bg: #fff7ee;
+  --bg-grad-1: #ffd6c2;
+  --bg-grad-2: #ffe5cf;
+  --bg-grad-3: #fde2cf;
+  --surface: #ffffff;
+  --surface-glass: rgba(255, 247, 238, 0.82);
+  --surface-muted: #fbeede;
+  --text: #2a1a0e;
+  --text-soft: #5a3f30;
+  --muted: #a08770;
+  --accent: #d77771;
+  --accent-2: #f0a097;
+  --accent-3: #ff7100;
+  --success: #2f9e44;
+  --danger: #e03131;
+  --border: rgba(42, 26, 14, 0.08);
+  --border-strong: rgba(42, 26, 14, 0.16);
+  --shadow-sm: 0 1px 2px rgba(42, 26, 14, 0.06), 0 2px 6px rgba(42, 26, 14, 0.04);
+  --shadow-md: 0 6px 18px rgba(42, 26, 14, 0.08), 0 1px 3px rgba(42, 26, 14, 0.06);
+  --shadow-lg: 0 16px 40px rgba(42, 26, 14, 0.14), 0 2px 6px rgba(42, 26, 14, 0.06);
+  --shadow-glow: 0 10px 30px rgba(255, 113, 0, 0.28);
+  --focus: #ff7100;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+[data-theme="dark"] {
+  --bg: #1a0e08;
+  --bg-grad-1: #25130c;
+  --bg-grad-2: #20110b;
+  --bg-grad-3: #1b0f09;
+  --surface: #2a1c14;
+  --surface-glass: rgba(42, 28, 20, 0.78);
+  --surface-muted: #3a2a20;
+  --text: #fff7ee;
+  --text-soft: #e0cab5;
+  --muted: #b09080;
+  --accent: #e88a82;
+  --accent-2: #f5a59c;
+  --accent-3: #ff8838;
+  --success: #5ad17a;
+  --danger: #ff7373;
+  --border: rgba(255, 247, 238, 0.08);
+  --border-strong: rgba(255, 247, 238, 0.16);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 6px 22px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 10px 30px rgba(255, 113, 0, 0.32);
+  --focus: #ff8838;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+*::selection { background: var(--accent); color: #fff; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Nunito', system-ui, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.005em;
+  overflow-x: hidden;
+  /* Static gradient — no animation, no dot grid. Much cheaper for Firefox. */
+  background:
+    radial-gradient(60% 50% at 12% 8%, var(--bg-grad-1) 0%, transparent 80%),
+    radial-gradient(55% 45% at 90% 14%, var(--bg-grad-2) 0%, transparent 80%),
+    radial-gradient(70% 60% at 50% 110%, var(--bg-grad-3) 0%, transparent 80%),
+    var(--bg);
+  background-attachment: fixed;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+button, input { font: inherit; color: inherit; }
+button { border: 0; background: transparent; cursor: pointer; }
+
+/* Inline Lucide icons. Width/height are baked into the SVG markup; this
+ * rule just keeps them from being squished by flex containers and ensures
+ * stroke colors follow the parent's currentColor. */
+.lucide { flex-shrink: 0; display: inline-block; vertical-align: middle; }
+
+/* ---------- App shell ---------- */
+.app {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding:
+    calc(1.25rem + env(safe-area-inset-top, 0px))
+    clamp(0.85rem, 3vw, 1.6rem)
+    calc(4rem + env(safe-area-inset-bottom, 0px));
+  position: relative;
+}
+
+/* ---------- Top nav ---------- */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.5rem 0.15rem;
+  margin-bottom: 1.4rem;
+}
+.nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+.icon-btn {
+  width: 42px; height: 42px;
+  border-radius: 14px;
+  display: grid; place-items: center;
+  background: var(--surface);
+  border: none;
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.icon-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.icon-btn:active { transform: translateY(0) scale(0.97); }
+
+/* Liquid mouse-reactive theme toggle. Uses the same --mx/--my pattern
+ * the category bubbles do, set by attachLiquidHover() in app.js. */
+.theme-toggle {
+  --mx: 0;
+  --my: 0;
+  --mxp: 50%;
+  --myp: 50%;
+  --pull: 2px;
+  --tilt: 2deg;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.34s cubic-bezier(0.34, 1.3, 0.64, 1),
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+  transform-origin: center;
+  will-change: transform;
+}
+.theme-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    80px circle at var(--mxp) var(--myp),
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0) 60%
+  );
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  transition: opacity 0.25s ease;
+  z-index: 0;
+}
+.theme-toggle:hover {
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: var(--shadow-md);
+}
+.theme-toggle.is-tracking {
+  transform:
+    translate(calc(var(--mx) * var(--pull)), calc(var(--my) * var(--pull) - 1px))
+    rotate(calc(var(--mx) * var(--tilt)))
+    scale(1.05);
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+.theme-toggle.is-tracking::before { opacity: 1; }
+.theme-toggle:active {
+  transform:
+    translate(calc(var(--mx) * 1px), calc(var(--my) * 1px))
+    scale(0.92);
+  transition-duration: 0.08s;
+  transition-timing-function: ease-out;
+}
+
+/* Sun/moon swap: both icons live stacked at center; the leaving icon
+ * spins out and shrinks while the arriving one spins in from the
+ * opposite side and pops to size — much more fun than a fade. */
+.theme-toggle .lucide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  transition:
+    opacity 0.32s ease,
+    transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+[data-theme="light"] .theme-toggle .moon {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+[data-theme="light"] .theme-toggle .sun {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(120deg) scale(0.2);
+  pointer-events: none;
+}
+[data-theme="dark"] .theme-toggle .sun {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+[data-theme="dark"] .theme-toggle .moon {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-120deg) scale(0.2);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-toggle.is-tracking { transform: none; transition: none; }
+  .theme-toggle::before { display: none; }
+  .theme-toggle .lucide { transition: opacity 0.15s ease; }
+  [data-theme="light"] .theme-toggle .sun,
+  [data-theme="dark"] .theme-toggle .moon {
+    transform: translate(-50%, -50%);
+  }
+  [data-theme="light"] .theme-toggle .moon,
+  [data-theme="dark"] .theme-toggle .sun {
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ---------- Hero ---------- */
+.hero { text-align: center; padding: 0.5rem 0 1.6rem; position: relative; }
+.hero .logo {
+  display: block;
+  margin: 0 auto;
+  width: clamp(180px, 48vw, 340px);
+  height: auto;
+  max-width: 100%;
+  transition: filter 0.2s ease;
+}
+[data-theme="dark"] .hero .logo {
+  /* Recolor the logo to match the cream brand tone (#FFF7EE) in dark mode. */
+  filter: brightness(0) saturate(100%) invert(96%) sepia(34%) saturate(314%) hue-rotate(305deg) brightness(107%) contrast(102%);
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--text-soft);
+  background: var(--surface-glass);
+  border: none;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  letter-spacing: 0.18em;
+}
+.eyebrow::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(215, 119, 113, 0.22);
+}
+.hero h1 {
+  font-size: clamp(2rem, 6.5vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0.7rem 0 0.4rem;
+}
+.hero h1 .grad {
+  background: linear-gradient(120deg, var(--accent) 0%, var(--accent-3) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p { color: var(--muted); font-weight: 600; font-size: 0.98rem; max-width: 38ch; margin: 0 auto; }
+
+/* ---------- Stats row ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  margin: 1.2rem auto 1.4rem;
+  max-width: 560px;
+}
+.stat {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  box-shadow: var(--shadow-sm);
+}
+.stat-label {
+  font-size: 0.66rem; font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.stat-value { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.02em; }
+.stat-value.accent { color: var(--accent); }
+
+/* ---------- Mode segmented control ---------- *
+ * Three modes: Dictionary, Cards, Quiz. Equal-flex buttons so the
+ * sliding pill width math (1/3 of inner area) always lines up. */
+.mode-switch {
+  position: relative;
+  display: flex;
+  background: var(--surface);
+  border: none;
+  border-radius: 999px;
+  padding: 5px;
+  box-shadow: var(--shadow-sm);
+  width: min(100%, 30em);
+  margin: 0 auto 1.1rem;
+}
+.mode-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  font-size: 0.86rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.mode-btn.active { color: #fff; }
+.mode-pill {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc((100% - 10px) / 3);
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  border-radius: 999px;
+  box-shadow: var(--shadow-glow);
+  transition: transform 0.32s cubic-bezier(0.5, 1.4, 0.4, 1);
+  z-index: 0;
+}
+.mode-pill[data-pos="0"] { transform: translateX(0); }
+.mode-pill[data-pos="1"] { transform: translateX(100%); }
+.mode-pill[data-pos="2"] { transform: translateX(200%); }
+
+/* ---------- Toolbar ---------- *
+ * One of two surfaces that uses backdrop-filter; the rest use solid surface
+ * to keep Firefox's compositor cost low. */
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0.85rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 1rem;
+}
+.search-wrap { position: relative; }
+.search-ico {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  display: inline-flex;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface-muted);
+  border: none;
+  border-radius: 14px;
+  padding: 0.78rem 2.2rem 0.78rem 2.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  transition: background-color 0.15s ease;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { outline: none; background: var(--surface); }
+.search-clear {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: none;
+  place-items: center;
+  background: var(--border-strong);
+  color: var(--text);
+  transition: background-color 0.15s ease;
+}
+.search-clear:hover { background: var(--accent); color: #fff; }
+.search-clear.visible { display: grid; }
+.toggle-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  border: none;
+  color: var(--text-soft);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.chip:hover { background: var(--border-strong); }
+.chip.on {
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 113, 0, 0.3);
+}
+.chip.danger:hover { background: rgba(224, 49, 49, 0.12); color: var(--danger); }
+.chip .label-on, .chip .label-off { display: none; }
+.chip[data-state="on"] .label-on { display: inline; }
+.chip[data-state="off"] .label-off { display: inline; }
+.chip[data-state="static"] .label-on { display: inline; }
+
+/* ---------- Categories ---------- */
+.cats-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.2rem 0 1rem;
+  justify-content: center;
+}
+.cat-btn {
+  /* Cursor-driven custom properties (set via JS pointermove).
+   *  --mx / --my : -1..1 horizontal/vertical offset from button center.
+   *  --mxp/ --myp: 0%..100% cursor position (used by gloss gradient).
+   *  --pull / --tilt: how strongly the bubble follows the cursor. */
+  --mx: 0;
+  --my: 0;
+  --mxp: 50%;
+  --myp: 50%;
+  --pull: 3px;
+  --tilt: 1.5deg;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: var(--surface);
+  border: none;
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  /* Spring-style easing makes the bubble overshoot on release for a
+     gummy/blobby feel. Box-shadow + color stay on a calmer curve. */
+  transition:
+    transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+  transform-origin: center;
+  will-change: transform;
+}
+/* Cursor-following gloss highlight. Lives behind the text/icon. */
+.cat-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    140px circle at var(--mxp) var(--myp),
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0) 60%
+  );
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  transition: opacity 0.25s ease;
+  z-index: 0;
+}
+.cat-btn > * { position: relative; z-index: 1; }
+.cat-btn:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: var(--shadow-sm);
+}
+/* Liquid magnet: while the cursor is over the bubble, follow it with a
+   short ease so it glides instead of springing. The spring takes back
+   over on pointerleave (when the class is removed). */
+.cat-btn.is-tracking {
+  transform:
+    translate(calc(var(--mx) * var(--pull)), calc(var(--my) * var(--pull) - 1px))
+    rotate(calc(var(--mx) * var(--tilt)))
+    scale(1.04);
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+.cat-btn.is-tracking::before { opacity: 1; }
+.cat-btn.is-tracking .dot {
+  /* Subtle parallax: dot drifts slightly opposite the cursor. */
+  transform: translate(calc(var(--mx) * -1px), calc(var(--my) * -1px)) scale(1.03);
+}
+.cat-btn:active {
+  /* Snappy squish on press — bite first, then the spring on release. */
+  transform:
+    translate(calc(var(--mx) * 1px), calc(var(--my) * 1px))
+    scale(0.9);
+  transition-duration: 0.08s;
+  transition-timing-function: ease-out;
+}
+.cat-btn .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, opacity 0.2s ease;
+}
+.cat-btn:active .dot { transform: scale(0.7); }
+.cat-btn .ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.cat-btn.active {
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px) scale(1.05);
+  animation: catBloop 0.38s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.cat-btn.active.is-tracking {
+  /* Selected bubble still follows the cursor, just a touch stronger. */
+  transform:
+    translate(calc(var(--mx) * var(--pull)), calc(var(--my) * var(--pull) - 1px))
+    rotate(calc(var(--mx) * var(--tilt)))
+    scale(1.05);
+}
+.cat-btn.active:active {
+  transform: translateY(0) scale(0.95);
+}
+.cat-btn.active .dot {
+  background: rgba(255, 255, 255, 0.85);
+  opacity: 1;
+  animation: dotBloop 0.38s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+/* "Bloop" — squash → overshoot → settle. Triggered when a category becomes
+   selected (the cats list re-renders, so the new .active node re-animates). */
+@keyframes catBloop {
+  0%   { transform: translateY(0) scale(0.94); }
+  45%  { transform: translateY(-1px) scale(1.06); }
+  100% { transform: translateY(-1px) scale(1.05); }
+}
+@keyframes dotBloop {
+  0%   { transform: scale(0.7); }
+  55%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-btn,
+  .cat-btn .dot { transition: none; animation: none; }
+  .cat-btn.active,
+  .cat-btn.active .dot { animation: none; }
+  .cat-btn.is-tracking,
+  .cat-btn.active.is-tracking { transform: none; }
+  .cat-btn.is-tracking .dot { transform: none; }
+  .cat-btn::before { display: none; }
+}
+
+/* ---------- Progress card ---------- *
+ * Second of two surfaces that uses backdrop-filter. */
+.progress-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.1rem;
+}
+.progress-info { display: flex; flex-direction: column; min-width: 0; }
+.progress-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.progress-count { font-size: 1.05rem; font-weight: 900; letter-spacing: -0.01em; }
+.progress-track {
+  flex: 1;
+  height: 10px;
+  background: var(--surface-muted);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-3));
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4, 1.4, 0.4, 1);
+  /* No always-running shimmer — that was a constant repaint cost. */
+}
+.progress-pct {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--accent);
+  min-width: 3.2rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Section header ---------- */
+.sec-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-lg);
+  color: #fff;
+  margin-bottom: 1.1rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.sec-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.35), transparent 60%);
+  pointer-events: none;
+}
+.sec-emoji {
+  font-size: 2rem;
+  line-height: 1;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+.sec-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.sec-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+.sec-sub { font-size: 0.78rem; opacity: 0.92; font-weight: 600; margin-top: 0.15rem; }
+
+/* ---------- Card grid ---------- *
+ * Predictable column counts at each breakpoint avoids the auto-fill
+ * "5 vs 6 columns" jitter at common desktop widths. */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+@media (min-width: 560px) { .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 760px) { .card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; } }
+@media (min-width: 1000px) { .card-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+.card {
+  position: relative;
+  background: transparent;
+  border-radius: var(--radius-lg);
+  min-height: 180px;
+  cursor: pointer;
+  animation: cardIn 0.4s cubic-bezier(0.3, 1.4, 0.4, 1) both;
+  transition: transform 0.2s ease;
+  outline: none;
+  /* Per-card perspective so each flip pivots around its own center.
+   * Putting it on the grid would warp side cards. */
+  perspective: 1200px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.card:hover { transform: translateY(-3px); }
+
+.card-inner {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.5, 1.4, 0.4, 1);
+}
+.card.flipped .card-inner { transform: rotateY(180deg); }
+
+.card-front, .card-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.85rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: none;
+  box-shadow: var(--shadow-md);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  text-align: center;
+}
+.card.is-learned .card-front {
+  background: linear-gradient(160deg, var(--surface), var(--surface-muted));
+}
+.card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, var(--surface) 0%, var(--surface-muted) 100%);
+}
+.c-jp {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.c-front-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+.speak-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  border: none;
+  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.speak-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.05);
+}
+.hint {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  position: absolute;
+  bottom: 0.7rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  opacity: 0.7;
+}
+.c-emoji { font-size: 2.4rem; line-height: 1; margin-bottom: 0.45rem; }
+.c-en { font-size: 1.05rem; font-weight: 900; letter-spacing: -0.01em; }
+.c-romaji {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 700;
+  font-style: italic;
+  margin-top: 0.15rem;
+  letter-spacing: 0.04em;
+}
+.learned-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: none;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.card.is-learned .learned-badge { display: grid; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Quiz ---------- */
+.quiz-card {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-xl);
+  padding: 1.3rem 1.2rem 1.1rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.35s ease both;
+}
+.quiz-card::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -30%;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-2), transparent 70%);
+  opacity: 0.18;
+  pointer-events: none;
+}
+.quiz-prompt {
+  text-align: center;
+  padding: 1.4rem 1rem;
+  margin: 0.5rem 0 1rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--surface-muted), transparent);
+  border: none;
+  position: relative;
+}
+.quiz-jp {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(2.1rem, 7vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.quiz-jp .speak-btn {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  width: 38px;
+  height: 38px;
+  font-size: 1rem;
+}
+.quiz-romaji {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 700;
+  font-style: italic;
+  margin-top: 0.5rem;
+  letter-spacing: 0.06em;
+}
+.quiz-prompt-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+.answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 0.5rem 0 1.1rem;
+}
+.answer-btn {
+  background: var(--surface-muted);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.95rem 1rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-align: left;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  position: relative;
+}
+.answer-btn::before {
+  content: attr(data-letter);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  border: none;
+  flex-shrink: 0;
+}
+.answer-btn:hover { transform: translateY(-1px); }
+.answer-btn.selected { background: rgba(255, 113, 0, 0.08); }
+.answer-btn.selected::before { background: var(--accent-3); color: #fff; }
+.answer-btn.correct {
+  background: linear-gradient(135deg, rgba(47, 158, 68, 0.12), rgba(47, 158, 68, 0.04));
+  color: var(--success);
+}
+.answer-btn.correct::before { background: var(--success); color: #fff; content: "✓"; }
+.answer-btn.wrong {
+  background: linear-gradient(135deg, rgba(224, 49, 49, 0.12), rgba(224, 49, 49, 0.04));
+  color: var(--danger);
+  animation: shake 0.35s ease;
+}
+.answer-btn.wrong::before { background: var(--danger); color: #fff; content: "✕"; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.quiz-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+.btn {
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: none;
+  background: var(--surface-muted);
+  color: var(--text);
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.btn.primary:hover:not(:disabled) { box-shadow: 0 14px 32px rgba(215, 119, 113, 0.35); }
+
+.score-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface-muted);
+  border-radius: var(--radius-md);
+  font-weight: 800;
+}
+.score-bar .label {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.score-bar .value { font-size: 1.1rem; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.score-bar .accuracy { color: var(--accent); font-weight: 900; }
+
+/* ---------- Empty state ---------- */
+.empty-state {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 2.4rem 1.4rem;
+  color: var(--muted);
+  font-weight: 700;
+  text-align: center;
+}
+.empty-state .ico { font-size: 2.4rem; display: block; margin-bottom: 0.5rem; }
+
+/* App-level visibility classes set by syncControlStates():
+ *
+ *   .welcome   → user is in cards/quiz mode but hasn't picked a category yet.
+ *                Hide the toolbar + progress card; categories grid stays so
+ *                they can pick something.
+ *
+ *   .dict-mode → user is on the Dictionary tab. Categories grid + progress
+ *                card don't apply; shuffle/reset chips don't apply either.
+ *                Toolbar (search, romaji, only-unlearned) stays useful.
+ */
+.app.welcome .toolbar,
+.app.welcome .progress-card {
+  display: none;
+}
+.app.dict-mode .cats-wrap,
+.app.dict-mode .progress-card,
+.app.dict-mode #shuffle-btn,
+.app.dict-mode #reset-category {
+  display: none;
+}
+
+/* ---------- Dictionary mode ---------- */
+.dict-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.dict-group {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.dict-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-weight: 800;
+  position: relative;
+  overflow: hidden;
+}
+.dict-group-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.3), transparent 60%);
+  pointer-events: none;
+}
+.dict-group-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.dict-group-label {
+  flex: 1;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+.dict-group-count {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.22);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+.dict-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dict-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 1rem;
+  transition: background-color 0.12s ease;
+}
+.dict-row:nth-child(even) { background: var(--surface-muted); }
+.dict-row:hover { background: rgba(215, 119, 113, 0.08); }
+.dict-jp-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+.dict-jp {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+}
+.dict-romaji {
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.dict-en {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+  max-width: 14em;
+  line-height: 1.25;
+}
+.dict-row .speak-btn {
+  width: 30px;
+  height: 30px;
+}
+.dict-row.is-learned .dict-jp { color: var(--accent); }
+.dict-row.is-learned .dict-jp::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 0.45rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  vertical-align: middle;
+}
+@media (max-width: 480px) {
+  .dict-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; }
+  .dict-en {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    text-align: left;
+    font-size: 0.86rem;
+    color: var(--text-soft);
+    max-width: none;
+  }
+  .dict-row .speak-btn { grid-column: 2; grid-row: 1; }
+}
+
+/* ---------- Focus / a11y ---------- */
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 8px; }
+.card:focus-visible { outline-offset: 5px; }
+
+/* ---------- Responsive ---------- */
+@media (min-width: 560px) {
+  .toolbar { grid-template-columns: 1fr auto; align-items: center; }
+  .toggle-row { justify-content: flex-end; }
+}
+@media (min-width: 760px) {
+  .answers { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .answers { grid-template-columns: 1fr; }
+  .stat-value { font-size: 1.1rem; }
+  .stat-label { font-size: 0.6rem; }
+  .top-nav { padding: 0; }
+}
+@media (max-width: 420px) {
+  .stats { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+  .stat { padding: 0.6rem 0.65rem; }
+  .card-grid { gap: 0.65rem; }
+  .card, .card-inner { min-height: 160px; }
+  .c-jp { font-size: 1.5rem; }
+  .quiz-actions { grid-template-columns: 1fr; }
+  .mode-btn { padding: 0.5rem 0.6rem; font-size: 0.78rem; gap: 0.3rem; }
+  .mode-btn .lucide { width: 14px; height: 14px; }
+  .icon-btn { width: 40px; height: 40px; }
+}
+
+/* Give the smooth-scroll targets a little breathing room so they
+   don't slam into the very top of the viewport. */
+#cats { scroll-margin-top: 1rem; }
+#vocab { scroll-margin-top: 1rem; }
+
+/* Floating "行きましょう！" toast. Hidden by default; .visible slides it up
+   from below the viewport. Sits above all content. */
+.go-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 80;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.4rem;
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  font-family: 'Noto Sans JP', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  box-shadow:
+    0 12px 32px rgba(255, 113, 0, 0.38),
+    0 4px 12px rgba(215, 119, 113, 0.28);
+  /* Start fully hidden below the viewport edge. */
+  transform: translate(-50%, calc(100% + 2rem));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.4, 0.5, 1),
+    opacity 0.22s ease,
+    box-shadow 0.2s ease;
+}
+.go-toast.visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.go-toast:hover {
+  transform: translate(-50%, -3px);
+  box-shadow:
+    0 18px 40px rgba(255, 113, 0, 0.46),
+    0 6px 16px rgba(215, 119, 113, 0.32);
+}
+.go-toast:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.go-toast:active {
+  transform: translate(-50%, -1px);
+}
+.go-toast-arrow { display: inline-block; }
+
+@media (max-width: 420px) {
+  .go-toast {
+    font-size: 0.92rem;
+    padding: 0.78rem 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

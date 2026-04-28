@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">imo</string>
+    <string name="title_activity_main">imo</string>
+    <string name="package_name">com.jacklyons.imo</string>
+    <string name="custom_url_scheme">com.jacklyons.imo</string>
+</resources>
