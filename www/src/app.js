@@ -114,10 +114,13 @@ function pickNextQuestion() {
 }
 
 function resetCategory() {
-  /* In "all" mode we deliberately DON'T wipe every flippedByCategory set —
-   * that would nuke the user's app-wide progress. Reset just clears the
-   * quiz session score. For a real category, also clear its learned set. */
-  if (state.currentCategory && state.currentCategory !== "all") {
+  /* Quiz "All" aggregates every category: reset clears learned progress everywhere
+   * plus the quiz session. Single category: only that category's card progress. */
+  if (state.currentCategory === "all") {
+    ORDER.forEach((k) => {
+      state.flippedByCategory[k] = new Set();
+    });
+  } else if (state.currentCategory) {
     state.flippedByCategory[state.currentCategory] = new Set();
   }
   state.quiz = {
@@ -403,9 +406,10 @@ vocab.addEventListener("submit", (ev) => {
     renderSection();
   });
   document.getElementById("reset-category").addEventListener("click", () => {
-    const msg = state.currentCategory === "all"
-      ? "Reset this quiz session's score?"
-      : "Reset progress for this category?";
+    const msg =
+      state.currentCategory === "all"
+        ? "Reset ALL learned progress (every category) and this quiz session?"
+        : "Reset progress for this category?";
     if (confirm(msg)) resetCategory();
   });
 

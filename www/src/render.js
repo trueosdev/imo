@@ -405,8 +405,8 @@ function renderKanaMode() {
     return renderKanaLearnShell();
   }
   const charts =
-    renderGojuonTable("Hiragana", GOJUON_HIRA_COLS, "hr") +
-    renderGojuonTable("Katakana", GOJUON_KATA_COLS, "kt");
+    renderGojuonTable("ひらがな（Hiragana）", GOJUON_HIRA_COLS, "hr") +
+    renderGojuonTable("カタカナ（Katakana）", GOJUON_KATA_COLS, "kt");
   return `<div class="kana-section"><div class="kana-chart-wrap">${charts}</div></div>`;
 }
 
