@@ -46,7 +46,10 @@ function beginKanaLearn() {
     echoInputCapture: undefined,
   };
   renderSection();
-  requestAnimationFrame(() => document.getElementById("kana-learn-input")?.focus({ preventScroll: true }));
+  requestAnimationFrame(() => {
+    smoothScrollTo(document.getElementById("vocab"));
+    document.getElementById("kana-learn-input")?.focus({ preventScroll: true });
+  });
 }
 
 function exitKanaLearn() {
@@ -135,6 +138,8 @@ function resetCategory() {
  *   2. Pick a category → "行きましょう！" toast slides up.
  *   3. Click toast (or scroll yourself) → land on the vocab section,
  *      and the toast auto-hides via IntersectionObserver.
+ * Dictionary: switching tabs does not scroll (stay at current viewport).
+ * Kana: Start drill / Try again → scroll vocab (drill) into view after render.
  */
 const goToast = document.getElementById("go-toast");
 const catsEl = document.getElementById("cats");
@@ -243,6 +248,9 @@ function setupEvents() {
   });
   setupCatLiquidHover();
 
+  const kanaLearnStartBtn = document.getElementById("kana-learn-start");
+  if (kanaLearnStartBtn) kanaLearnStartBtn.addEventListener("click", () => beginKanaLearn());
+
   const vocab = document.getElementById("vocab");
   vocab.addEventListener("click", (e) => {
     const speakEl = e.target.closest("[data-speak]");
@@ -292,7 +300,7 @@ function setupEvents() {
       return;
     }
 
-    if (e.target.closest("#kana-learn-start") || e.target.closest("#kana-learn-again")) {
+    if (e.target.closest("#kana-learn-again")) {
       beginKanaLearn();
       return;
     }
@@ -331,8 +339,6 @@ vocab.addEventListener("submit", (ev) => {
     leavingQuizCleanup();
     renderCats();
     renderSection();
-    /* Dictionary always has content (every word) so jump right to it. */
-    smoothScrollTo(vocabEl);
     hideGoToast();
   });
   document.getElementById("mode-cards").addEventListener("click", () => {
@@ -499,7 +505,7 @@ vocab.addEventListener("submit", (ev) => {
     if (e.target.matches("input, textarea")) return;
     if (state.mode === "kana" && state.kanaLearn) return;
 
-    if (e.key === "/" && !e.metaKey && !e.ctrlKey && state.mode !== "quiz") {
+    if (e.key === "/" && !e.metaKey && !e.ctrlKey && state.mode !== "quiz" && state.mode !== "cards") {
       e.preventDefault();
       search.focus();
     }

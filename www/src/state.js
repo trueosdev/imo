@@ -387,7 +387,7 @@ function currentWordsFiltered() {
   if (!state.currentCategory) return [];
   const words = currentWordsRaw().map((w, i) => ({ ...w, index: i }));
   const q =
-    state.mode === "quiz"
+    state.mode === "quiz" || state.mode === "cards"
       ? ""
       : state.searchQuery.trim().toLowerCase();
   let out = words.filter(

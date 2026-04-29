@@ -404,21 +404,10 @@ function renderKanaMode() {
   if (state.kanaLearn) {
     return renderKanaLearnShell();
   }
-  const learnBar =
-    `<header class="kana-learn-intro" aria-label="Kana drill">
-      <div class="kana-learn-intro-text">
-        <h2 class="kana-learn-heading">Typing drill</h2>
-        <p class="kana-learn-blurb">
-          Hiragana and Katakana (gojūon + 「ん」/「ン」), one prompt at a time. Type Hepburn romaji, then <kbd class="inline-kbd">Enter</kbd> to check — correct answers advance automatically.
-        </p>
-      </div>
-      <button type="button" class="btn primary kana-learn-start" id="kana-learn-start">Learn</button>
-    </header>`;
-
   const charts =
     renderGojuonTable("Hiragana", GOJUON_HIRA_COLS, "hr") +
     renderGojuonTable("Katakana", GOJUON_KATA_COLS, "kt");
-  return `<div class="kana-section">${learnBar}<div class="kana-chart-wrap">${charts}</div></div>`;
+  return `<div class="kana-section"><div class="kana-chart-wrap">${charts}</div></div>`;
 }
 
 function kanaScriptLabelForChar(jp) {
@@ -529,7 +518,6 @@ function renderKanaLearnShell() {
   return `<div class="kana-section kana-learn-section">
     <div class="kana-learn-drill-inner">
       <div class="kana-learn-meta">
-        <span class="kana-learn-script">${kanaScriptLabelForChar(cur.jp)}</span>
         <span class="kana-learn-progress-num">${progress}</span>
         <span class="kana-learn-score-mini">✓ ${s.correct} · ✗ ${s.missed}</span>
         <button type="button" class="chip kana-learn-exit-chip" id="kana-learn-exit">Exit drill</button>
@@ -549,7 +537,7 @@ function renderKanaLearnShell() {
           autocapitalize="off"
           autocomplete="off"
           aria-label="Romaji for ${escapeHtml(cur.jp)}"
-          placeholder="Type Hepburn romaji"
+          placeholder="type Hepburn romaji"
           value="${flash ? escapeHtml(String(s.echoInputCapture ?? "")) : ""}"
           ${inpDisabled}
         />
@@ -699,11 +687,17 @@ const MODE_POS = { dictionary: 0, cards: 1, quiz: 2, kana: 3 };
 function syncControlStates() {
   const app = document.querySelector(".app");
   /* App-level visibility (see styles.css):
-   *   .dict-mode / .kana-mode → reference tabs (cats/progress/shuffle/reset hide)
+   *   .dict-mode / .kana-mode / .cards-mode / .quiz-mode → layout + search visibility
+   *   .kana-drill-session → Kana typing drill active: hide whole toolbar
    *   .welcome → cards or quiz with no category yet (toolbar/progress hide) */
   app.classList.toggle("dict-mode", state.mode === "dictionary");
   app.classList.toggle("kana-mode", state.mode === "kana");
+  app.classList.toggle("cards-mode", state.mode === "cards");
   app.classList.toggle("quiz-mode", state.mode === "quiz");
+  app.classList.toggle(
+    "kana-drill-session",
+    state.mode === "kana" && Boolean(state.kanaLearn)
+  );
   app.classList.toggle(
     "welcome",
     (state.mode === "cards" || state.mode === "quiz") && !state.currentCategory

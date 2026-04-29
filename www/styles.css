@@ -58,6 +58,8 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+  /* Vertical rhythm between top-nav, hero logo, stats, mode switch, toolbar, cats, progress. */
+  --stack-gap: 1.2rem;
   /* Quiz: yay — render.js uses random `.quiz-yay-slot-tr` or `.quiz-yay-slot-tl` + `.quiz-yay`. Resize / inset via these only. */
   --quiz-yay-width-min: 500px;
   --quiz-yay-width-pref: 26vw;
@@ -139,7 +141,7 @@ button { border: 0; background: transparent; cursor: pointer; }
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 0.5rem 0.15rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: var(--stack-gap);
 }
 .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
 .sr-only {
@@ -474,7 +476,7 @@ button { border: 0; background: transparent; cursor: pointer; }
 }
 
 /* ---------- Hero ---------- */
-.hero { text-align: center; padding: 0.5rem 0 1.6rem; position: relative; }
+.hero { text-align: center; padding: 0.5rem 0 var(--stack-gap); position: relative; }
 .hero .logo {
   display: block;
   margin: 0 auto;
@@ -525,8 +527,8 @@ button { border: 0; background: transparent; cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.55rem;
-  margin: 1.2rem auto 1.4rem;
-  max-width: 560px;
+  margin: 0 auto var(--stack-gap);
+  max-width: 600px;
 }
 .stat {
   background: var(--surface);
@@ -560,7 +562,8 @@ button { border: 0; background: transparent; cursor: pointer; }
   padding: 5px;
   box-shadow: var(--shadow-sm);
   width: min(100%, 38em);
-  margin: 0 auto 1.1rem;
+  max-width: min(600px, 100%);
+  margin: 0 auto var(--stack-gap);
 }
 .mode-btn {
   position: relative;
@@ -612,22 +615,33 @@ html.chrome-boot .theme-toggle .lucide {
 }
 
 /* ---------- Toolbar ---------- *
- * One of two surfaces that uses backdrop-filter; the rest use solid surface
- * to keep Firefox's compositor cost low. */
+ * Dictionary tab keeps a solid panel; Cards / Quiz / Kana use a transparent shell
+ * so the page gradient reads through behind chips + search strips. */
 .toolbar {
   display: grid;
   grid-template-columns: 1fr;
+  justify-items: center;
   gap: 0.6rem;
-  background: transparent;
+  width: 100%;
+  max-width: min(600px, 100%);
+  margin-inline: auto;
+  background: var(--surface);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   border: none;
   border-radius: var(--radius-lg);
-  padding: 0.85rem;
+  padding: 0.72rem 0.6rem;
   box-shadow: none;
-  margin-bottom: 1rem;
+  margin-bottom: var(--stack-gap);
 }
-.search-wrap { position: relative; }
+
+.app.cards-mode .toolbar,
+.app.quiz-mode .toolbar,
+.app.kana-mode .toolbar {
+  background: transparent;
+}
+
+.search-wrap { position: relative; width: 100%; }
 .search-ico {
   position: absolute;
   left: 0.85rem;
@@ -666,7 +680,13 @@ html.chrome-boot .theme-toggle .lucide {
 }
 .search-clear:hover { background: var(--accent); color: #fff; }
 .search-clear.visible { display: grid; }
-.toggle-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+}
 .chip {
   display: inline-flex;
   align-items: center;
@@ -697,7 +717,8 @@ html.chrome-boot .theme-toggle .lucide {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  padding: 0.2rem 0 1rem;
+  padding: 0.15rem 0 0;
+  margin-bottom: var(--stack-gap);
   justify-content: center;
 }
 .cat-btn {
@@ -852,7 +873,7 @@ html.chrome-boot .theme-toggle .lucide {
   border: none;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  margin-bottom: 1.1rem;
+  margin-bottom: var(--stack-gap);
 }
 .progress-info { display: flex; flex-direction: column; min-width: 0; }
 .progress-title {
@@ -1079,19 +1100,47 @@ html.chrome-boot .theme-toggle .lucide {
   height: auto;
   max-width: 100%;
 }
+/* Full cycle: pop in, hold, pop out — total 2s (Quiz correct only). */
 @media (prefers-reduced-motion: no-preference) {
   .quiz-yay-slot .quiz-yay {
-    animation: quizYayPop 0.42s cubic-bezier(0.34, 1.35, 0.5, 1) both;
+    animation: quizYayPopCycle 2s cubic-bezier(0.34, 1.35, 0.5, 1) both;
   }
 }
-@keyframes quizYayPop {
-  from {
+@media (prefers-reduced-motion: reduce) {
+  .quiz-yay-slot .quiz-yay {
+    animation: quizYayPopCycleReduced 2s ease both;
+  }
+}
+@keyframes quizYayPopCycle {
+  0% {
     opacity: 0;
     transform: scale(0.82) rotate(-5deg);
   }
-  to {
+  12% {
     opacity: 1;
     transform: scale(1) rotate(0deg);
+  }
+  52% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.86) rotate(4deg);
+  }
+}
+@keyframes quizYayPopCycleReduced {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
@@ -1272,12 +1321,18 @@ html.chrome-boot .theme-toggle .lucide {
  *                shuffle/reset hidden; search + filters stay useful.
  *
  *   .kana-mode → Kana tab: same layout hides as Dictionary, plus search and
- *                “only unlearned” (charts are static). Romaji toggle remains.
+ *                “only unlearned” (charts are static). Romaji toggle stays in toolbar.
+ *                While drilling (.kana-drill-session), the toolbar is hidden.
+ *
+ *   .cards-mode → Cards tab: search hidden (browse by category + flashcards).
  *
  *   .quiz-mode → Quiz tab: search hidden (quizzes use the full category pool).
  */
 .app.welcome .toolbar,
 .app.welcome .progress-card {
+  display: none;
+}
+.app.kana-drill-session .toolbar {
   display: none;
 }
 .app.dict-mode .cats-wrap,
@@ -1294,10 +1349,21 @@ html.chrome-boot .theme-toggle .lucide {
 .app.kana-mode #toggle-unlearned {
   display: none;
 }
+.app.cards-mode .search-wrap,
 .app.quiz-mode .search-wrap {
   display: none;
 }
-.app.quiz-mode #shortcut-panel .shortcut-section[aria-label="Search"] {
+.toolbar-kana-drill {
+  display: none;
+  flex-shrink: 0;
+  align-self: center;
+}
+.app.kana-mode:not(.kana-drill-session) .toolbar-kana-drill {
+  display: inline-flex;
+  align-items: center;
+}
+.app.quiz-mode #shortcut-panel .shortcut-section[aria-label="Search"],
+.app.cards-mode #shortcut-panel .shortcut-section[aria-label="Search"] {
   display: none;
 }
 
@@ -1306,6 +1372,10 @@ html.chrome-boot .theme-toggle .lucide {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  max-width: min(600px, 100%);
+  margin-inline: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 .dict-group {
   background: var(--surface);
@@ -1566,37 +1636,6 @@ span.kana-n-char {
   margin-top: 0;
 }
 
-/* Hiragana / Katakana romaji drill */
-.kana-learn-intro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem 1.25rem;
-  padding: 1rem 1.05rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(215, 119, 113, 0.14), rgba(255, 113, 0, 0.08));
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-}
-.kana-learn-intro-text { flex: 1 1 16rem; min-width: 0; }
-.kana-learn-heading {
-  margin: 0 0 0.35rem;
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  color: var(--text);
-}
-.kana-learn-blurb {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--muted);
-  line-height: 1.45;
-}
-.kana-learn-start {
-  flex-shrink: 0;
-}
 .kana-learn-section .kana-learn-drill-inner {
   max-width: 22rem;
   margin: 0 auto;
@@ -1609,16 +1648,7 @@ span.kana-n-char {
   gap: 0.35rem 0.65rem;
   margin-bottom: 0.75rem;
 }
-.kana-learn-script {
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 0.12rem 0.42rem;
-  border-radius: 999px;
-  background: var(--surface-muted);
-  color: var(--muted);
-}
+
 .kana-learn-progress-num {
   font-size: 0.78rem;
   font-weight: 800;
@@ -1828,10 +1858,6 @@ span.kana-n-char {
 .card:focus-visible { outline-offset: 5px; }
 
 /* ---------- Responsive ---------- */
-@media (min-width: 560px) {
-  .toolbar { grid-template-columns: 1fr auto; align-items: center; }
-  .toggle-row { justify-content: flex-end; }
-}
 @media (min-width: 760px) {
   .answers { grid-template-columns: 1fr 1fr; }
 }
