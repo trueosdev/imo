@@ -47,6 +47,8 @@ Optional environment variables for `tts-server/server.py`: `IMO_TTS_PORT`, `IMO_
 
 **Note:** The bridge calls Microsoft’s undocumented Edge-read-aloud service; availability can change.
 
+On the web, **neural audio is cached in memory** (LRU) and **prefetched** for likely next words (dictionary rows, visible cards/quiz pool, kana chart / drill) on idle to cut tap-to-sound delay.
+
 ### Production (learnimo.vercel.app)
 
 The live site is **[https://learnimo.vercel.app](https://learnimo.vercel.app)**.

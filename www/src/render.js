@@ -605,35 +605,85 @@ function renderQuizMode(words) {
   </div>`;
 }
 
+function collectAllKanaChartSpeakables() {
+  const h = collectKanaPairsFromCols(GOJUON_HIRA_COLS);
+  const k = collectKanaPairsFromCols(GOJUON_KATA_COLS);
+  return [...h, ...k, { jp: "ん", roma: "n" }, { jp: "ン", roma: "n" }].map((p) => p.jp);
+}
+
+/** Idle-time prefetch of neural TTS clips for strings likely to be spoken next. */
+function scheduleTtsPrefetchForCurrentView() {
+  try {
+    if (typeof supportsTTS !== "function" || !supportsTTS()) return;
+
+    /** @type {string[]} */
+    let list = [];
+
+    if (state.mode === "dictionary") {
+      const groups = buildDictionaryGroups();
+      for (const g of groups) {
+        for (const w of g.words) list.push(w.jp);
+      }
+    } else if (state.mode === "kana") {
+      if (state.kanaLearn) {
+        const s = state.kanaLearn;
+        const deck = s.deck;
+        if (!deck.length || s.idx >= deck.length) return;
+        for (let i = s.idx; i < deck.length && i < s.idx + 14; i++) list.push(deck[i].jp);
+      } else {
+        list = collectAllKanaChartSpeakables();
+      }
+    } else if (!state.currentCategory) {
+      return;
+    } else if (state.mode === "cards") {
+      list = currentWordsFiltered().map((w) => w.jp);
+    } else if (state.mode === "quiz") {
+      list = currentWordsFiltered().map((w) => w.jp);
+    } else {
+      return;
+    }
+
+    if (typeof schedulePrefetchSpeakTexts === "function") {
+      schedulePrefetchSpeakTexts(list, { max: state.mode === "kana" && !state.kanaLearn ? 96 : 40 });
+    }
+  } catch (_) {
+    /* noop */
+  }
+}
+
 function renderSection() {
-  /* Dictionary and Kana are category-agnostic: they always render. */
-  if (state.mode === "dictionary") {
-    document.getElementById("vocab").innerHTML = renderDictionaryMode();
+  try {
+    /* Dictionary and Kana are category-agnostic: they always render. */
+    if (state.mode === "dictionary") {
+      document.getElementById("vocab").innerHTML = renderDictionaryMode();
+      syncControlStates();
+      updateProgress();
+      saveState();
+      return;
+    }
+    if (state.mode === "kana") {
+      document.getElementById("vocab").innerHTML = renderKanaMode();
+      syncControlStates();
+      updateProgress();
+      saveState();
+      return;
+    }
+    if (!state.currentCategory) {
+      document.getElementById("vocab").innerHTML = "";
+      syncControlStates();
+      updateProgress();
+      saveState();
+      return;
+    }
+    const words = currentWordsFiltered();
+    const body = state.mode === "quiz" ? renderQuizMode(words) : renderCardMode(words);
+    document.getElementById("vocab").innerHTML = body;
     syncControlStates();
     updateProgress();
     saveState();
-    return;
+  } finally {
+    scheduleTtsPrefetchForCurrentView();
   }
-  if (state.mode === "kana") {
-    document.getElementById("vocab").innerHTML = renderKanaMode();
-    syncControlStates();
-    updateProgress();
-    saveState();
-    return;
-  }
-  if (!state.currentCategory) {
-    document.getElementById("vocab").innerHTML = "";
-    syncControlStates();
-    updateProgress();
-    saveState();
-    return;
-  }
-  const words = currentWordsFiltered();
-  const body = state.mode === "quiz" ? renderQuizMode(words) : renderCardMode(words);
-  document.getElementById("vocab").innerHTML = body;
-  syncControlStates();
-  updateProgress();
-  saveState();
 }
 
 function setChip(id, on) {

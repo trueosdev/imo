@@ -32,6 +32,107 @@ function edgeTtsBase() {
 
 let activeEdgeAudio = null;
 
+/** In-memory LRU of neural TTS Blobs (key = normalized text). Reduces repeat & prefetched latency. */
+const TTS_CACHE_MAX = 48;
+const ttsBlobCache = new Map();
+const ttsCacheOrder = [];
+const ttsInflight = new Map();
+
+function normalizeTtsKey(text) {
+  const s = String(text ?? "").trim();
+  if (!s) return "";
+  return s.length > 500 ? s.slice(0, 500) : s;
+}
+
+function ttsCacheTouch(key) {
+  const i = ttsCacheOrder.indexOf(key);
+  if (i >= 0) ttsCacheOrder.splice(i, 1);
+  ttsCacheOrder.push(key);
+}
+
+function ttsCacheSet(key, blob) {
+  ttsBlobCache.set(key, blob);
+  ttsCacheTouch(key);
+  while (ttsCacheOrder.length > TTS_CACHE_MAX) {
+    const old = ttsCacheOrder.shift();
+    if (old) ttsBlobCache.delete(old);
+  }
+}
+
+/**
+ * Fetches MP3 for neural TTS; dedupes concurrent requests and fills `ttsBlobCache`.
+ * @param {string} text
+ * @returns {Promise<Blob>}
+ */
+async function fetchTtsBlob(text) {
+  const key = normalizeTtsKey(text);
+  if (!key) throw new Error("empty TTS text");
+
+  const hit = ttsBlobCache.get(key);
+  if (hit) {
+    ttsCacheTouch(key);
+    return hit;
+  }
+
+  const existing = ttsInflight.get(key);
+  if (existing) return existing;
+
+  const base = edgeTtsBase();
+  if (!base) throw new Error("no TTS base");
+
+  const p = (async () => {
+    const url = `${base}/tts?${new URLSearchParams({ text: key })}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`TTS ${r.status}`);
+    const blob = await r.blob();
+    ttsCacheSet(key, blob);
+    return blob;
+  })();
+
+  ttsInflight.set(key, p);
+  try {
+    return await p;
+  } finally {
+    ttsInflight.delete(key);
+  }
+}
+
+/**
+ * Prefetch neural TTS audio for upcoming strings (idle-time, staggered). No-op without edge base.
+ * @param {string[]} texts
+ * @param {{ max?: number }} [opts]
+ */
+function schedulePrefetchSpeakTexts(texts, opts) {
+  const max = opts && Number.isFinite(opts.max) ? Math.max(0, Math.min(64, opts.max)) : 40;
+  if (!max || !supportsTTS() || !edgeTtsBase()) return;
+
+  const seen = new Set();
+  const keys = [];
+  for (const t of texts) {
+    const k = normalizeTtsKey(t);
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    if (ttsBlobCache.has(k) || ttsInflight.has(k)) continue;
+    keys.push(k);
+    if (keys.length >= max) break;
+  }
+  if (!keys.length) return;
+
+  const run = () => {
+    keys.forEach((key, i) => {
+      window.setTimeout(() => {
+        void fetchTtsBlob(key).catch(() => {});
+      }, i * 42);
+    });
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 2200 });
+  } else {
+    window.setTimeout(run, 0);
+  }
+}
+
 const storage = {
   getItem(key) {
     return window.localStorage.getItem(key);
@@ -191,10 +292,13 @@ async function speak(text) {
       activeEdgeAudio = null;
     }
     try {
-      const url = `${base}/tts?${new URLSearchParams({ text })}`;
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(`TTS ${r.status}`);
-      const blob = await r.blob();
+      const key = normalizeTtsKey(text);
+      let blob = key ? ttsBlobCache.get(key) : null;
+      if (key && blob) {
+        ttsCacheTouch(key);
+      } else {
+        blob = await fetchTtsBlob(text);
+      }
       const objUrl = URL.createObjectURL(blob);
       const audio = new Audio();
       audio.dataset.objectUrl = objUrl;
