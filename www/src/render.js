@@ -401,10 +401,164 @@ function renderGojuonTable(title, cols, scriptTag) {
 }
 
 function renderKanaMode() {
+  if (state.kanaLearn) {
+    return renderKanaLearnShell();
+  }
+  const learnBar =
+    `<header class="kana-learn-intro" aria-label="Kana drill">
+      <div class="kana-learn-intro-text">
+        <h2 class="kana-learn-heading">Typing drill</h2>
+        <p class="kana-learn-blurb">
+          Hiragana and Katakana (gojūon + 「ん」/「ン」), one prompt at a time. Type Hepburn romaji, then <kbd class="inline-kbd">Enter</kbd> to check — correct answers advance automatically.
+        </p>
+      </div>
+      <button type="button" class="btn primary kana-learn-start" id="kana-learn-start">Learn</button>
+    </header>`;
+
   const charts =
     renderGojuonTable("Hiragana", GOJUON_HIRA_COLS, "hr") +
     renderGojuonTable("Katakana", GOJUON_KATA_COLS, "kt");
-  return `<div class="kana-section">${charts}</div>`;
+  return `<div class="kana-section">${learnBar}<div class="kana-chart-wrap">${charts}</div></div>`;
+}
+
+function kanaScriptLabelForChar(jp) {
+  const cp = jp.codePointAt(0);
+  if (cp >= 0x3040 && cp <= 0x309f) return "Hiragana";
+  if (cp >= 0x30a0 && cp <= 0x30ff) return "Katakana";
+  return "Kana";
+}
+
+function collectKanaPairsFromCols(cols) {
+  const out = [];
+  cols.forEach((col) =>
+    col.forEach((cell) => {
+      if (cell && cell[0]) out.push({ jp: cell[0], roma: cell[1] });
+    })
+  );
+  return out;
+}
+
+function shuffleDeck(arr) {
+  const deck = arr.slice();
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+function buildNewKanaLearnSession() {
+  const h = collectKanaPairsFromCols(GOJUON_HIRA_COLS);
+  const k = collectKanaPairsFromCols(GOJUON_KATA_COLS);
+  h.push({ jp: "ん", roma: "n" });
+  k.push({ jp: "ン", roma: "n" });
+  return shuffleDeck([...h, ...k]);
+}
+
+function romajiMatchesExpected(expectedRoma, rawInput) {
+  const n = String(rawInput ?? "")
+    .trim()
+    .toLowerCase();
+  if (!n) return false;
+  const exp = expectedRoma.trim().toLowerCase();
+  if (n === exp) return true;
+  /** Hepburn synonyms / common IME outputs */
+  const synonymGroups = [
+    ["shi", "si"],
+    ["chi", "ti"],
+    ["tsu", "tu"],
+    ["fu", "hu"],
+    ["ji", "zi"],
+    ["sha", "sya"],
+    ["shu", "syu"],
+    ["sho", "syo"],
+    ["cha", "tya"],
+    ["chu", "tyu"],
+    ["cho", "tyo"],
+  ];
+  if (synonymGroups.some((g) => g.includes(exp) && g.includes(n))) return true;
+  if ((exp === "wo" && n === "o") || (exp === "o" && n === "wo")) return true;
+  return false;
+}
+
+function renderKanaLearnShell() {
+  const s = state.kanaLearn;
+  const deckLen = s.deck.length;
+
+  if (s.idx >= deckLen) {
+    const totalAttempts = s.correct + s.missed;
+    const pct = totalAttempts ? Math.round((s.correct / totalAttempts) * 100) : 0;
+    return `<div class="kana-section kana-learn-section">
+      <div class="kana-learn-complete">
+        <p class="kana-learn-complete-title">All done!</p>
+        <p class="kana-learn-stats">
+          Correct <strong>${s.correct}</strong> · Missed <strong>${s.missed}</strong>
+          ${totalAttempts ? ` · ${pct}% precision` : ""}
+        </p>
+        <p class="kana-learn-hint-sub">Deck: ${deckLen} kana (${deckLen === 92 ? "full gojūon × 2 + n + ン" : `${deckLen} items`}).</p>
+        <div class="kana-learn-complete-actions">
+          <button type="button" class="btn primary" id="kana-learn-again">Try again</button>
+          <button type="button" class="btn" id="kana-learn-done">Back to charts</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const cur = s.deck[s.idx];
+  const progress = `${s.idx + 1} / ${deckLen}`;
+  const flash = s.feedbackFlash;
+  const ringClass =
+    flash === "ok" ? " kana-learn-ring--ok" : flash === "bad" ? " kana-learn-ring--bad" : "";
+  const hintN = cur.jp === "ん" || cur.jp === "ン" ? ` <span class="kana-learn-n-hint">(solo n)</span>` : "";
+
+  const statusHtml =
+    flash === "ok"
+      ? `<div class="kana-learn-status kana-learn-status--ok" role="status">
+          <span class="kana-learn-glyph" aria-hidden="true">✓</span> Correct
+        </div>`
+      : flash === "bad"
+      ? `<div class="kana-learn-status kana-learn-status--bad" role="alert">
+          <span class="kana-learn-glyph" aria-hidden="true">✗</span>
+          Expected <strong>${escapeHtml(cur.roma)}</strong>${hintN}
+        </div>`
+      : `<div class="kana-learn-status-slot" aria-hidden="true"></div>`;
+
+  const inpDisabled = flash ? " disabled" : "";
+  const btnDisabled = flash ? " disabled aria-disabled=\"true\"" : "";
+
+  return `<div class="kana-section kana-learn-section">
+    <div class="kana-learn-drill-inner">
+      <div class="kana-learn-meta">
+        <span class="kana-learn-script">${kanaScriptLabelForChar(cur.jp)}</span>
+        <span class="kana-learn-progress-num">${progress}</span>
+        <span class="kana-learn-score-mini">✓ ${s.correct} · ✗ ${s.missed}</span>
+        <button type="button" class="chip kana-learn-exit-chip" id="kana-learn-exit">Exit drill</button>
+      </div>
+      <form class="kana-learn-form${flash ? " kana-learn-form--frozen" : ""}" id="kana-learn-form" action="#" autocomplete="off">
+        <label class="kana-learn-label" for="kana-learn-input">Type the romaji for</label>
+        <div class="kana-learn-ring${ringClass}">
+          ${statusHtml}
+          <div class="kana-learn-char" aria-hidden="true">${escapeHtml(cur.jp)}</div>
+        </div>
+        <input
+          id="kana-learn-input"
+          class="kana-learn-input"
+          type="text"
+          inputmode="latin"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+          aria-label="Romaji for ${escapeHtml(cur.jp)}"
+          placeholder="Type Hepburn romaji"
+          value="${flash ? escapeHtml(String(s.echoInputCapture ?? "")) : ""}"
+          ${inpDisabled}
+        />
+        <div class="kana-learn-footer">
+          <button type="submit" class="btn primary" id="kana-learn-submit"${btnDisabled}>Check</button>
+        </div>
+      </form>
+    </div>
+  </div>`;
 }
 
 function renderQuizMode(words) {
@@ -423,7 +577,17 @@ function renderQuizMode(words) {
   const accuracy = state.quiz.total ? Math.round((state.quiz.correct / state.quiz.total) * 100) : 0;
   const checkDisabled = !state.quiz.selected || state.quiz.answered;
   const letters = ["A", "B", "C", "D", "E", "F"];
+  const correct =
+    state.quiz.answered && state.quiz.selected === current.en;
+  /* Random top corner: `.quiz-yay-slot-tr` or `.quiz-yay-slot-tl`. */
+  /* On-screen size: styles.css :root --quiz-yay-* (width/height on img are layout hints only). */
+  const yaySlots = ["quiz-yay-slot-tr", "quiz-yay-slot-tl"];
+  const yaySlotClass = yaySlots[Math.floor(Math.random() * yaySlots.length)];
+  const yayMarkup = correct
+    ? `<span class="quiz-yay-slot ${yaySlotClass}" aria-hidden="true"><img class="quiz-yay" src="src/yay.svg" alt="" width="120" height="56" draggable="false" decoding="async"></span>`
+    : "";
   return `<div class="quiz-card">
+    ${yayMarkup}
     <div class="quiz-prompt">
       <div class="quiz-prompt-label">What does this mean?</div>
       <div class="quiz-jp">${escapeHtml(current.jp)} ${speakBtn}</div>
@@ -489,6 +653,7 @@ function syncControlStates() {
    *   .welcome → cards or quiz with no category yet (toolbar/progress hide) */
   app.classList.toggle("dict-mode", state.mode === "dictionary");
   app.classList.toggle("kana-mode", state.mode === "kana");
+  app.classList.toggle("quiz-mode", state.mode === "quiz");
   app.classList.toggle(
     "welcome",
     (state.mode === "cards" || state.mode === "quiz") && !state.currentCategory

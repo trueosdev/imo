@@ -1,6 +1,10 @@
 node_modules/
 .DS_Store
 
+# Python edge-tts bridge (tts-server)
+tts-server/__pycache__/
+tts-server/.venv/
+
 # iOS
 ios/App/Pods/
 ios/App/build/

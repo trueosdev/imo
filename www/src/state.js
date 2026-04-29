@@ -6,6 +6,17 @@ const STORAGE_KEY = "jvocab_state_v1";
 let ttsBlocked = false;
 let ttsWarningLogged = false;
 
+/** Neural TTS via rany2/edge-tts (local Python bridge). When set (e.g. http://127.0.0.1:8787), `speak` uses `/tts` MP3 instead of browser `speechSynthesis`. */
+function edgeTtsBase() {
+  const b =
+    typeof window.__IMO_EDGE_TTS_BASE !== "undefined" && window.__IMO_EDGE_TTS_BASE !== null
+      ? String(window.__IMO_EDGE_TTS_BASE).trim()
+      : "";
+  return b.replace(/\/$/, "");
+}
+
+let activeEdgeAudio = null;
+
 const storage = {
   getItem(key) {
     return window.localStorage.getItem(key);
@@ -41,6 +52,8 @@ const state = {
     total: 0,
     lastWordIndex: -1,
   },
+  /** Session-only Hiragana + Katakana romaji drill (see render.js). Not persisted. */
+  kanaLearn: null,
 };
 
 function todayKey() {
@@ -129,7 +142,9 @@ function escapeHtml(s) {
 }
 
 function supportsTTS() {
-  return !ttsBlocked && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+  if (edgeTtsBase()) return true;
+  if (ttsBlocked) return false;
+  return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 }
 
 function getJapaneseVoice() {
@@ -148,13 +163,55 @@ function blockNativeTTS() {
   if (typeof renderSection === "function") renderSection();
 }
 
-function speak(text) {
+async function speak(text) {
   if (!supportsTTS()) return;
+
+  const base = edgeTtsBase();
+  if (base) {
+    speechSynthesis.cancel();
+    if (activeEdgeAudio) {
+      activeEdgeAudio.pause();
+      URL.revokeObjectURL(activeEdgeAudio.dataset.objectUrl || "");
+      activeEdgeAudio.removeAttribute("src");
+      activeEdgeAudio = null;
+    }
+    try {
+      const url = `${base}/tts?${new URLSearchParams({ text })}`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`TTS ${r.status}`);
+      const blob = await r.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const audio = new Audio();
+      audio.dataset.objectUrl = objUrl;
+      audio.onended = () => {
+        URL.revokeObjectURL(objUrl);
+        if (activeEdgeAudio === audio) activeEdgeAudio = null;
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        if (activeEdgeAudio === audio) activeEdgeAudio = null;
+      };
+      activeEdgeAudio = audio;
+      audio.src = objUrl;
+      await audio.play();
+      return;
+    } catch (_) {
+      if (activeEdgeAudio?.dataset?.objectUrl) {
+        URL.revokeObjectURL(activeEdgeAudio.dataset.objectUrl);
+      }
+      activeEdgeAudio = null;
+      /* Fall through to Web Speech API when offline or bridge down. */
+    }
+  }
+
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
   const japaneseVoice = getJapaneseVoice();
-  if (isNativeCapacitorPlatform() && !japaneseVoice) {
+  if (isNativeCapacitorPlatform() && !japaneseVoice && !base) {
     blockNativeTTS();
     return;
   }
+  if (isNativeCapacitorPlatform() && !japaneseVoice) return;
+
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "ja-JP";
@@ -210,7 +267,10 @@ function isWordLearned(w) {
 function currentWordsFiltered() {
   if (!state.currentCategory) return [];
   const words = currentWordsRaw().map((w, i) => ({ ...w, index: i }));
-  const q = state.searchQuery.trim().toLowerCase();
+  const q =
+    state.mode === "quiz"
+      ? ""
+      : state.searchQuery.trim().toLowerCase();
   let out = words.filter(
     (w) => !q || [w.jp, w.r, w.en].some((v) => String(v).toLowerCase().includes(q))
   );

@@ -26,6 +26,73 @@ function toggleFlip(idx, cardEl) {
   saveState();
 }
 
+let kanaLearnAdvanceTimer = null;
+
+function clearKanaLearnAdvanceTimer() {
+  if (kanaLearnAdvanceTimer != null) {
+    clearTimeout(kanaLearnAdvanceTimer);
+    kanaLearnAdvanceTimer = null;
+  }
+}
+
+function beginKanaLearn() {
+  clearKanaLearnAdvanceTimer();
+  state.kanaLearn = {
+    deck: buildNewKanaLearnSession(),
+    idx: 0,
+    correct: 0,
+    missed: 0,
+    feedbackFlash: null,
+    echoInputCapture: undefined,
+  };
+  renderSection();
+  requestAnimationFrame(() => document.getElementById("kana-learn-input")?.focus({ preventScroll: true }));
+}
+
+function exitKanaLearn() {
+  clearKanaLearnAdvanceTimer();
+  state.kanaLearn = null;
+  renderSection();
+}
+
+function finalizeKanaLearnFeedbackAdvance() {
+  const s = state.kanaLearn;
+  kanaLearnAdvanceTimer = null;
+  if (!s) return;
+  s.feedbackFlash = null;
+  s.echoInputCapture = undefined;
+  s.idx += 1;
+  renderSection();
+  requestAnimationFrame(() =>
+    document.getElementById("kana-learn-input")?.focus({ preventScroll: true })
+  );
+}
+
+function submitKanaLearnAttempt() {
+  const s = state.kanaLearn;
+  if (!s || state.mode !== "kana" || s.feedbackFlash) return;
+  const cur = s.deck[s.idx];
+  if (!cur) return;
+  const el = document.getElementById("kana-learn-input");
+  const raw = el?.value ?? "";
+  const ok = romajiMatchesExpected(cur.roma, raw);
+  if (ok) {
+    s.correct += 1;
+    s.feedbackFlash = "ok";
+    window.nativeHaptics?.();
+  } else {
+    s.missed += 1;
+    s.feedbackFlash = "bad";
+  }
+  s.echoInputCapture = raw;
+  renderSection();
+
+  clearKanaLearnAdvanceTimer();
+  const fast = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const delay = ok ? (fast ? 160 : 380) : (fast ? 420 : 760);
+  kanaLearnAdvanceTimer = setTimeout(finalizeKanaLearnFeedbackAdvance, delay);
+}
+
 function pickNextQuestion() {
   const words = currentWordsFiltered();
   if (!words.length) return;
@@ -224,6 +291,24 @@ function setupEvents() {
       pickNextQuestion();
       return;
     }
+
+    if (e.target.closest("#kana-learn-start") || e.target.closest("#kana-learn-again")) {
+      beginKanaLearn();
+      return;
+    }
+    if (
+      e.target.closest("#kana-learn-done") ||
+      e.target.closest("#kana-learn-exit")
+    ) {
+      exitKanaLearn();
+      return;
+    }
+  });
+
+vocab.addEventListener("submit", (ev) => {
+    if (ev.target?.id !== "kana-learn-form") return;
+    ev.preventDefault();
+    submitKanaLearnAttempt();
   });
 
   vocab.addEventListener("keydown", (e) => {
@@ -242,6 +327,7 @@ function setupEvents() {
 
   document.getElementById("mode-dictionary").addEventListener("click", () => {
     state.mode = "dictionary";
+    state.kanaLearn = null;
     leavingQuizCleanup();
     renderCats();
     renderSection();
@@ -251,6 +337,7 @@ function setupEvents() {
   });
   document.getElementById("mode-cards").addEventListener("click", () => {
     state.mode = "cards";
+    state.kanaLearn = null;
     leavingQuizCleanup();
     renderCats();
     renderSection();
@@ -258,6 +345,7 @@ function setupEvents() {
   });
   document.getElementById("mode-quiz").addEventListener("click", () => {
     state.mode = "quiz";
+    state.kanaLearn = null;
     renderCats();
     renderSection();
     /* If no category is picked yet there's nothing to quiz on,
@@ -323,26 +411,115 @@ function setupEvents() {
   });
   attachLiquidHover(themeToggle);
 
+  const scrollTopBtn = document.getElementById("scroll-top-btn");
+  if (scrollTopBtn) {
+    const SCROLL_TOP_THRESHOLD = 120;
+    function syncScrollTopBtn() {
+      const y = window.scrollY ?? document.documentElement.scrollTop ?? 0;
+      const show = y > SCROLL_TOP_THRESHOLD;
+      scrollTopBtn.classList.toggle("is-visible", show);
+      scrollTopBtn.setAttribute("aria-hidden", show ? "false" : "true");
+      scrollTopBtn.tabIndex = show ? 0 : -1;
+    }
+    let scrollTopScheduled = false;
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (scrollTopScheduled) return;
+        scrollTopScheduled = true;
+        requestAnimationFrame(() => {
+          syncScrollTopBtn();
+          scrollTopScheduled = false;
+        });
+      },
+      { passive: true }
+    );
+    scrollTopBtn.addEventListener("click", () => {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    });
+    syncScrollTopBtn();
+  }
+
+  /* Keyboard shortcuts popover (#shortcut-toggle / #shortcut-panel): outside
+   * pointer/tap closes; Escape closes; toggle click opens or closes explicitly. */
+  const closeShortcutsWithEscapeFocus = (function attachShortcutsPopover() {
+    const btn = document.getElementById("shortcut-toggle");
+    const panel = document.getElementById("shortcut-panel");
+    const wrap = btn?.closest(".shortcut-wrap");
+    if (!btn || !panel || !wrap) return () => {};
+
+    function closeShortcutPanel(restoreToggleFocusAfter) {
+      if (panel.hidden) return;
+      panel.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      if (restoreToggleFocusAfter) btn.focus({ preventScroll: true });
+    }
+
+    function maybeCloseOnOutsideClick(ev) {
+      if (panel.hidden) return;
+      const t = ev.target instanceof Node ? ev.target : null;
+      if (!t || !wrap.contains(t)) closeShortcutPanel(false);
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!panel.hidden) {
+        closeShortcutPanel(false);
+        return;
+      }
+      panel.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      requestAnimationFrame(() => panel.focus({ preventScroll: true }));
+    });
+
+    /* Capture phase closes on full click outside; avoids pointerdown-outside +
+     * click-end-on-toggle reopening in one gesture. */
+    document.addEventListener("click", maybeCloseOnOutsideClick, true);
+
+    attachLiquidHover(btn);
+
+    return () => closeShortcutPanel(true);
+  })();
+
   document.addEventListener("keydown", (e) => {
-    if (e.target.matches("input,textarea")) return;
-    if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+    if (e.key === "Escape" && state.mode === "kana" && state.kanaLearn) {
+      e.preventDefault();
+      exitKanaLearn();
+      return;
+    }
+
+    const panelEl = document.getElementById("shortcut-panel");
+    if (e.key === "Escape" && panelEl && !panelEl.hidden) {
+      e.preventDefault();
+      closeShortcutsWithEscapeFocus();
+      return;
+    }
+
+    if (e.target.matches("input, textarea")) return;
+    if (state.mode === "kana" && state.kanaLearn) return;
+
+    if (e.key === "/" && !e.metaKey && !e.ctrlKey && state.mode !== "quiz") {
       e.preventDefault();
       search.focus();
     }
     if (e.key === "1") {
       state.mode = "dictionary";
+      state.kanaLearn = null;
       leavingQuizCleanup();
       renderCats();
       renderSection();
     }
     if (e.key === "2") {
       state.mode = "cards";
+      state.kanaLearn = null;
       leavingQuizCleanup();
       renderCats();
       renderSection();
     }
     if (e.key === "3") {
       state.mode = "quiz";
+      state.kanaLearn = null;
       renderCats();
       renderSection();
     }
@@ -393,3 +570,26 @@ setupEvents();
 syncControlStates();
 renderCats();
 renderSection();
+
+/* Restore chrome transitions after hydration: defer until fonts settle (less FOUT on labels),
+ * with a max wait so `.chrome-boot` never sticks. */
+(function scheduleChromeBootRelease() {
+  const releaseChromeBootMotion = () => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        document.documentElement.classList.remove("chrome-boot");
+      });
+    });
+  };
+  const hasFontLoadingApi =
+    typeof document !== "undefined" &&
+    document.fonts &&
+    document.fonts.ready &&
+    typeof document.fonts.ready.then === "function";
+  Promise.race([
+    hasFontLoadingApi ? document.fonts.ready : new Promise((r) => setTimeout(r, 450)),
+    new Promise((r) => setTimeout(r, 2200)),
+  ])
+    .catch(() => {})
+    .finally(() => releaseChromeBootMotion());
+})();

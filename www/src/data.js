@@ -291,7 +291,7 @@ const DATA = {
     { jp: "あたらしい", r: "Atarashii", en: "New", e: "🆕" },
     { jp: "ふるい", r: "Furui", en: "Old", e: "🏚️" },
     { jp: "かわいい", r: "Kawaii", en: "Cute", e: "🥰" },
-    { jp: "おもしろい", r: "Omoshiroi", en: "Interesting / Funny", e: "😄" },
+    { jp: "おもしろい", r: "Omoshiroi", en: "Interesting / Funny", e: "😅" },
   ] },
   verbs: { emoji: "🏃", label: "Action Words", color: "#E03131", words: [
     { jp: "たべる", r: "Taberu", en: "To eat", e: "🍽️" },

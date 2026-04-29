@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="chrome-boot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -10,11 +10,60 @@
 <title>imo - Learn Japanese</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="styles.css">
+<link rel="preload" href="fonts/LINESeedJP_OTF_Rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/LINESeedJP_OTF_Bd.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
 <div class="app">
   <nav class="top-nav">
     <div class="nav-actions">
+      <div class="shortcut-wrap">
+        <button type="button" class="icon-btn shortcut-toggle" id="shortcut-toggle" aria-expanded="false" aria-haspopup="dialog" aria-controls="shortcut-panel">
+          <svg class="lucide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8h.01"/><path d="M12 12h.01"/><path d="M14 8h.01"/><path d="M16 12h.01"/><path d="M18 8h.01"/><path d="M6 8h.01"/><path d="M7 16h10"/><path d="M8 12h.01"/><rect width="20" height="16" x="2" y="4" rx="2"/></svg>
+          <span class="sr-only">Keyboard shortcuts</span>
+        </button>
+        <div class="shortcut-panel" id="shortcut-panel" hidden role="dialog" aria-labelledby="shortcut-panel-title" tabindex="-1">
+          <div class="shortcut-panel-tail" aria-hidden="true"></div>
+          <div class="shortcut-panel-inner">
+            <header class="shortcut-banner">
+              <span class="shortcut-banner-icon" aria-hidden="true"><svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8h.01"/><path d="M12 12h.01"/><path d="M14 8h.01"/><path d="M16 12h.01"/><path d="M18 8h.01"/><path d="M6 8h.01"/><path d="M7 16h10"/><path d="M8 12h.01"/><rect width="20" height="16" x="2" y="4" rx="2"/></svg></span>
+              <div class="shortcut-banner-text">
+                <span id="shortcut-panel-title" class="shortcut-banner-title">ショートカット</span>
+              </div>
+            </header>
+            <section class="shortcut-section" aria-label="Study modes">
+              <h3 class="shortcut-heading">Study modes</h3>
+              <ul class="shortcut-list">
+                <li><kbd class="shortcut-kbd">1</kbd> <span class="shortcut-desc">Dictionary</span></li>
+                <li><kbd class="shortcut-kbd">2</kbd> <span class="shortcut-desc">Cards</span></li>
+                <li><kbd class="shortcut-kbd">3</kbd> <span class="shortcut-desc">Quiz</span></li>
+                <li><kbd class="shortcut-kbd">4</kbd> <span class="shortcut-desc">Kana charts</span></li>
+              </ul>
+            </section>
+            <section class="shortcut-section" aria-label="Search">
+              <h3 class="shortcut-heading">Search</h3>
+              <ul class="shortcut-list shortcut-list-single">
+                <li><kbd class="shortcut-kbd">/</kbd> <span class="shortcut-desc">Jump to search</span></li>
+              </ul>
+            </section>
+            <section class="shortcut-section shortcut-section-accent" aria-label="Quiz mode">
+              <h3 class="shortcut-heading">When you’re quizzing <span class="shortcut-pill">Quiz tab</span></h3>
+              <ul class="shortcut-list">
+                <li><kbd class="shortcut-kbd">A</kbd><span class="shortcut-dot">→</span><kbd class="shortcut-kbd">D</kbd> <span class="shortcut-desc">Pick answers</span></li>
+                <li><kbd class="shortcut-kbd wide">Enter</kbd> <span class="shortcut-desc">Check answer</span></li>
+                <li><kbd class="shortcut-kbd">→</kbd> <span class="shortcut-desc">Next question</span></li>
+                <li><kbd class="shortcut-kbd">n</kbd> <span class="shortcut-desc">Next question <span class="shortcut-note">(after you answer)</span></span></li>
+              </ul>
+            </section>
+            <section class="shortcut-section" aria-label="Cards">
+              <h3 class="shortcut-heading">Flashcards</h3>
+              <ul class="shortcut-list shortcut-list-single">
+                <li><kbd class="shortcut-kbd wide">Enter</kbd> or <kbd class="shortcut-kbd wide">Space</kbd> <span class="shortcut-desc">Flip focused card</span></li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </div>
       <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark and light mode">
         <svg class="lucide moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         <svg class="lucide sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
@@ -113,8 +162,13 @@
   <svg class="lucide go-toast-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
 </button>
 
+<button type="button" class="icon-btn scroll-top-btn" id="scroll-top-btn" aria-label="Back to top" tabindex="-1" aria-hidden="true">
+  <svg class="lucide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+</button>
+
 <!-- Load order matters: each module depends on the previous one's globals.
      Plain <script> tags (not modules) so this works via file:// without a dev server. -->
+<script>window.__IMO_EDGE_TTS_BASE = "http://127.0.0.1:8787";</script>
 <script src="src/data.js" defer></script>
 <script src="src/state.js" defer></script>
 <script src="src/render.js" defer></script>

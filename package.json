@@ -8,6 +8,8 @@
     "ios": "cap open ios",
     "android": "cap open android",
     "web": "serve www -l 5173",
+    "tts": "python3 tts-server/server.py",
+    "dev": "concurrently -k \"serve www -l 5173\" \"npm run tts\"",
     "assets": "capacitor-assets generate --iconBackgroundColor \"#fff7ee\" --splashBackgroundColor \"#fff7ee\""
   },
   "repository": {
@@ -21,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/trueosdev/imo/issues"
   },
-  "homepage": "https://github.com/trueosdev/imo#readme",
+  "homepage": "https://learnimo.vercel.app",
   "dependencies": {
     "@capacitor/android": "^8.3.1",
     "@capacitor/cli": "^8.3.1",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
+    "concurrently": "^9.2.1",
     "serve": "^14.2.6"
   }
 }

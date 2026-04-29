@@ -58,6 +58,11 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+  /* Quiz: yay — render.js uses random `.quiz-yay-slot-tr` or `.quiz-yay-slot-tl` + `.quiz-yay`. Resize / inset via these only. */
+  --quiz-yay-width-min: 500px;
+  --quiz-yay-width-pref: 26vw;
+  --quiz-yay-width-max: 140px;
+  --quiz-yay-inset: 0rem;
 }
 
 [data-theme="dark"] {
@@ -137,6 +142,222 @@ button { border: 0; background: transparent; cursor: pointer; }
   margin-bottom: 1.4rem;
 }
 .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard shortcuts popover (nav) */
+.shortcut-wrap {
+  position: relative;
+}
+.shortcut-toggle[aria-expanded="true"] {
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(215, 119, 113, 0.35);
+  color: var(--accent);
+}
+.shortcut-panel {
+  position: absolute;
+  z-index: 120;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(19.5rem, calc(100vw - 2rem));
+  max-height: min(72vh, 560px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px var(--border-strong);
+  transform-origin: top right;
+}
+/* Author `display:flex` above beats the default [hidden] rule; tie hidden explicitly. */
+.shortcut-panel[hidden] {
+  display: none !important;
+}
+.shortcut-panel:not([hidden]) {
+  animation: shortcutPanelIn 0.38s cubic-bezier(0.34, 1.35, 0.5, 1) both;
+}
+@keyframes shortcutPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shortcut-panel:not([hidden]) { animation: none; }
+}
+.shortcut-panel-tail {
+  position: absolute;
+  top: -7px;
+  right: 14px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border-radius: 3px;
+  transform: rotate(45deg);
+  border-right: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border-strong);
+  z-index: 1;
+}
+.shortcut-panel-inner {
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  padding-bottom: 0.35rem;
+}
+.shortcut-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 1rem 1rem 0.85rem;
+  background: linear-gradient(135deg, rgba(215, 119, 113, 0.18), rgba(255, 113, 0, 0.12));
+  border-bottom: 1px solid var(--border);
+}
+.shortcut-banner-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  line-height: 0;
+  filter: drop-shadow(0 2px 4px rgba(42, 26, 14, 0.12));
+  color: var(--accent);
+}
+.shortcut-banner-icon .lucide {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.shortcut-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.shortcut-banner-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  background: linear-gradient(120deg, var(--accent), var(--accent-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.shortcut-banner-sub {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.shortcut-section {
+  padding: 0.75rem 1rem 0.5rem;
+}
+.shortcut-section + .shortcut-section {
+  border-top: 1px solid var(--border);
+}
+.shortcut-section-accent {
+  background: linear-gradient(180deg, rgba(255, 113, 0, 0.06), transparent 72%);
+}
+.shortcut-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.shortcut-pill {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 113, 0, 0.25);
+}
+.shortcut-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.shortcut-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.45rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+.shortcut-desc { flex: 1; min-width: 8rem; font-weight: 700; color: var(--text); }
+.shortcut-note {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.shortcut-dot {
+  font-weight: 800;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.shortcut-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  padding: 0.2rem 0.42rem;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+  background: var(--surface-muted);
+  border-radius: 8px;
+  border: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 0 var(--border-strong);
+}
+[data-theme="dark"] .shortcut-kbd {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.shortcut-kbd.wide {
+  min-width: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.shortcut-panel:focus {
+  outline: none;
+}
+.shortcut-panel:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
 .icon-btn {
   width: 42px; height: 42px;
   border-radius: 14px;
@@ -375,6 +596,20 @@ button { border: 0; background: transparent; cursor: pointer; }
 .mode-pill[data-pos="1"] { transform: translateX(100%); }
 .mode-pill[data-pos="2"] { transform: translateX(200%); }
 .mode-pill[data-pos="3"] { transform: translateX(300%); }
+
+/* First paint after load: no transitions until hydrated (see app.js). Preload + fonts.ready
+ * limits FOUT on tab labels (“Cards”, 「あ」, “Kana”) from LINESeed swapping in. */
+html.chrome-boot .mode-pill {
+  transition: none;
+}
+html.chrome-boot .mode-btn {
+  transition: none !important;
+}
+html.chrome-boot .theme-toggle,
+html.chrome-boot .theme-toggle::before,
+html.chrome-boot .theme-toggle .lucide {
+  transition: none !important;
+}
 
 /* ---------- Toolbar ---------- *
  * One of two surfaces that uses backdrop-filter; the rest use solid surface
@@ -818,6 +1053,48 @@ button { border: 0; background: transparent; cursor: pointer; }
   opacity: 0.18;
   pointer-events: none;
 }
+/* Position wrappers (avoid transform clashes with yay pop animation). */
+.quiz-yay-slot {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  line-height: 0;
+}
+.quiz-yay-slot-tr {
+  top: var(--quiz-yay-inset);
+  right: var(--quiz-yay-inset);
+}
+.quiz-yay-slot-tl {
+  top: var(--quiz-yay-inset);
+  left: var(--quiz-yay-inset);
+}
+
+.quiz-yay-slot .quiz-yay {
+  display: block;
+  width: clamp(
+    var(--quiz-yay-width-min),
+    var(--quiz-yay-width-pref),
+    var(--quiz-yay-width-max)
+  );
+  height: auto;
+  max-width: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .quiz-yay-slot .quiz-yay {
+    animation: quizYayPop 0.42s cubic-bezier(0.34, 1.35, 0.5, 1) both;
+  }
+}
+@keyframes quizYayPop {
+  from {
+    opacity: 0;
+    transform: scale(0.82) rotate(-5deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
 .quiz-prompt {
   text-align: center;
   padding: 1.4rem 1rem;
@@ -996,6 +1273,8 @@ button { border: 0; background: transparent; cursor: pointer; }
  *
  *   .kana-mode → Kana tab: same layout hides as Dictionary, plus search and
  *                “only unlearned” (charts are static). Romaji toggle remains.
+ *
+ *   .quiz-mode → Quiz tab: search hidden (quizzes use the full category pool).
  */
 .app.welcome .toolbar,
 .app.welcome .progress-card {
@@ -1013,6 +1292,12 @@ button { border: 0; background: transparent; cursor: pointer; }
 }
 .app.kana-mode .search-wrap,
 .app.kana-mode #toggle-unlearned {
+  display: none;
+}
+.app.quiz-mode .search-wrap {
+  display: none;
+}
+.app.quiz-mode #shortcut-panel .shortcut-section[aria-label="Search"] {
   display: none;
 }
 
@@ -1276,6 +1561,263 @@ span.kana-n-char {
   margin-top: 0;
 }
 
+/* Hiragana / Katakana romaji drill */
+.kana-learn-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+  padding: 1rem 1.05rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(215, 119, 113, 0.14), rgba(255, 113, 0, 0.08));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.kana-learn-intro-text { flex: 1 1 16rem; min-width: 0; }
+.kana-learn-heading {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+.kana-learn-blurb {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.kana-learn-start {
+  flex-shrink: 0;
+}
+.kana-learn-section .kana-learn-drill-inner {
+  max-width: 22rem;
+  margin: 0 auto;
+  padding: 0 0 0.75rem;
+}
+.kana-learn-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  margin-bottom: 0.75rem;
+}
+.kana-learn-script {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--muted);
+}
+.kana-learn-progress-num {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.kana-learn-score-mini {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.kana-learn-exit-chip {
+  margin-left: auto;
+}
+.kana-learn-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+.kana-learn-form--frozen {
+  pointer-events: none;
+}
+.kana-learn-form--frozen .kana-learn-input {
+  opacity: 0.88;
+  cursor: not-allowed;
+}
+.kana-learn-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-align: center;
+}
+.kana-learn-ring {
+  align-self: center;
+  width: 100%;
+  max-width: 18rem;
+  padding: 0.55rem 0.75rem 0.75rem;
+  border-radius: 18px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  transition: box-shadow 0.2s ease;
+}
+.kana-learn-status-slot {
+  min-height: 2.1rem;
+}
+.kana-learn-status {
+  min-height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  text-align: center;
+  line-height: 1.25;
+}
+.kana-learn-status--ok {
+  color: #2b8a3e;
+}
+.kana-learn-status--bad {
+  color: var(--danger, #c92a2a);
+}
+.kana-learn-status--bad strong {
+  font-weight: 900;
+  color: var(--accent);
+}
+.kana-learn-glyph {
+  font-weight: 900;
+}
+.kana-learn-n-hint {
+  font-weight: 600;
+  font-size: 0.78em;
+  color: var(--muted);
+}
+.kana-learn-ring--ok {
+  animation: kanaLearnRingPulseOk 0.42s ease;
+}
+.kana-learn-ring--bad {
+  animation: kanaLearnRingShake 0.45s ease;
+}
+@keyframes kanaLearnRingPulseOk {
+  from {
+    transform: scale(0.97);
+    filter: brightness(0.98);
+  }
+  to {
+    transform: scale(1);
+    filter: none;
+  }
+}
+@keyframes kanaLearnRingShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-5px);
+  }
+  36% {
+    transform: translateX(5px);
+  }
+  54% {
+    transform: translateX(-3px);
+  }
+  72% {
+    transform: translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kana-learn-ring--ok,
+  .kana-learn-ring--bad {
+    animation: none;
+  }
+}
+[data-theme="dark"] .kana-learn-status--ok {
+  color: #69db7c;
+}
+.kana-learn-section .kana-learn-ring .kana-learn-char {
+  margin: 0 auto;
+  padding: 0.35rem 0.5rem 0.55rem;
+  font-family: "LINESeedJP", system-ui, sans-serif;
+  font-size: clamp(3rem, 18vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--text);
+  text-shadow: 0 2px 18px rgba(215, 119, 113, 0.15);
+  text-align: center;
+}
+.kana-learn-input {
+  width: 100%;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.15rem;
+  font-family: inherit;
+  font-weight: 600;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.kana-learn-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(215, 119, 113, 0.25);
+}
+.kana-learn-input:disabled {
+  opacity: 0.92;
+}
+.kana-learn-footer {
+  margin-top: 0.35rem;
+  display: flex;
+  justify-content: center;
+}
+.inline-kbd {
+  display: inline-block;
+  padding: 0.08rem 0.35rem;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-muted);
+  font-size: 0.76em;
+  font-weight: 800;
+  font-family: inherit;
+}
+.kana-learn-complete {
+  text-align: center;
+  padding: 1.75rem 1rem 1rem;
+  max-width: 22rem;
+  margin: 0 auto;
+}
+.kana-learn-complete-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 5vw, 1.85rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(120deg, var(--accent), var(--accent-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.kana-learn-stats {
+  margin: 0 0 0.45rem;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.kana-learn-hint-sub {
+  margin: 0 0 1.35rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.kana-learn-complete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
 /* ---------- Focus / a11y ---------- */
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 8px; }
 .card:focus-visible { outline-offset: 5px; }
@@ -1362,6 +1904,25 @@ span.kana-n-char {
   transform: translate(-50%, -1px);
 }
 .go-toast-arrow { display: inline-block; }
+
+/* Fixed bottom-right — same footprint as theme toggle (.icon-btn); shows after scrolling down */
+.scroll-top-btn {
+  position: fixed;
+  right: calc(10% + env(safe-area-inset-right, 0px));
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 85;
+  transition: opacity 0.22s ease, visibility 0.22s ease, transform 0.24s cubic-bezier(0.34, 1.35, 0.5, 1);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+.scroll-top-btn.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
 
 @media (max-width: 420px) {
   .go-toast {
