@@ -146,6 +146,7 @@ function resetCategory() {
  */
 const goToast = document.getElementById("go-toast");
 const catsEl = document.getElementById("cats");
+const chipRowEl = document.querySelector(".toggle-row");
 const vocabEl = document.getElementById("vocab");
 
 function smoothScrollTo(el) {
@@ -250,6 +251,7 @@ function setupEvents() {
     if (state.mode === "cards" || state.mode === "quiz") showGoToast();
   });
   setupCatLiquidHover();
+  attachLiquidHoverDelegated(chipRowEl, ".chip");
 
   const kanaLearnStartBtn = document.getElementById("kana-learn-start");
   if (kanaLearnStartBtn) kanaLearnStartBtn.addEventListener("click", () => beginKanaLearn());
