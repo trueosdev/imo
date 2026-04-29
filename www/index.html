@@ -168,7 +168,15 @@
 
 <!-- Load order matters: each module depends on the previous one's globals.
      Plain <script> tags (not modules) so this works via file:// without a dev server. -->
-<script>window.__IMO_EDGE_TTS_BASE = "http://127.0.0.1:8787";</script>
+<!-- Local neural TTS (`npm run tts`). Production (e.g. learnimo.vercel.app) uses `/api/tts` automatically; omitting this script is fine there. -->
+<script>
+(function () {
+  var h = typeof location !== "undefined" ? location.hostname : "";
+  if (h === "localhost" || h === "127.0.0.1" || h === "::1") {
+    window.__IMO_EDGE_TTS_BASE = "http://127.0.0.1:8787";
+  }
+})();
+</script>
 <script src="src/data.js" defer></script>
 <script src="src/state.js" defer></script>
 <script src="src/render.js" defer></script>

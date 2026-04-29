@@ -6,13 +6,28 @@ const STORAGE_KEY = "jvocab_state_v1";
 let ttsBlocked = false;
 let ttsWarningLogged = false;
 
-/** Neural TTS via rany2/edge-tts (local Python bridge). When set (e.g. http://127.0.0.1:8787), `speak` uses `/tts` MP3 instead of browser `speechSynthesis`. */
+/** Neural TTS (`…/tts` → MP3) via edge-tts. Explicit `window.__IMO_EDGE_TTS_BASE` overrides; HTTPS web uses same-origin `/api` + `/tts` when unset (see `api/` on Vercel). Set base to empty string only to disable. */
 function edgeTtsBase() {
-  const b =
-    typeof window.__IMO_EDGE_TTS_BASE !== "undefined" && window.__IMO_EDGE_TTS_BASE !== null
-      ? String(window.__IMO_EDGE_TTS_BASE).trim()
-      : "";
-  return b.replace(/\/$/, "");
+  if (typeof window.__IMO_EDGE_TTS_BASE !== "undefined") {
+    const t = window.__IMO_EDGE_TTS_BASE;
+    if (t === null || t === false) return "";
+    return String(t).trim().replace(/\/$/, "");
+  }
+  if (typeof isNativeCapacitorPlatform === "function" && isNativeCapacitorPlatform()) {
+    /* Native shells use bundled Web Speech elsewhere; skip `/api` fetch attempts. */
+    return "";
+  }
+  try {
+    if (typeof location === "undefined" || !(location.protocol === "http:" || location.protocol === "https:")) return "";
+    const h = location.hostname;
+    if (h === "localhost" || h === "127.0.0.1" || h === "::1") return "";
+    /* Same-origin neural API deployed with the site (e.g. `/api/tts` on learnimo.vercel.app). */
+    const o = location.origin;
+    if (!o || o === "null") return "";
+    return `${o.replace(/\/$/, "")}/api`;
+  } catch (_) {
+    return "";
+  }
 }
 
 let activeEdgeAudio = null;

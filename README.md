@@ -31,13 +31,9 @@ The static app uses browser `speechSynthesis` by default. For sharper Japanese n
    cd tts-server && pip install -r requirements.txt
    ```
 
-2. Point the SPA at the bridge (defaults to port `8787`). Add **before** the other `<script>` tags in `www/index.html`, or set once in DevTools Console:
+2. **`www/index.html`** already sets `window.__IMO_EDGE_TTS_BASE` to `http://127.0.0.1:8787` **only when** the hostname is `localhost`, `127.0.0.1`, or `::1`. You can override with DevTools Console or your own snippet when needed.
 
-   ```html
-   <script>window.__IMO_EDGE_TTS_BASE = "http://127.0.0.1:8787";</script>
-   ```
-
-3. From the repo root, serve the web app **and** the TTS bridge together:
+3. From the repo root, serve the web app **and** the local TTS bridge together:
 
    ```
    npm run dev
@@ -53,20 +49,25 @@ Optional environment variables for `tts-server/server.py`: `IMO_TTS_PORT`, `IMO_
 
 ### Production (learnimo.vercel.app)
 
-The deployed site is **[https://learnimo.vercel.app](https://learnimo.vercel.app)**. Browser `speechSynthesis` works there the same as locally; no server is required.
+The live site is **[https://learnimo.vercel.app](https://learnimo.vercel.app)**.
 
-For **neural Edge TTS via a separate bridge** hosted somewhere with a public `https://…` URL, inject `window.__IMO_EDGE_TTS_BASE` to that API (for example a one-line `<script>` in `www/index.html` via your deploy process, or env-injected HTML if you add a build step). On the bridge, set:
+Browser `speechSynthesis` still works as a fallback everywhere.
 
-`IMO_TTS_CORS=https://learnimo.vercel.app`
+**Neural Edge TTS** is **`GET /api/tts?text=…`** (MP3) via **Vercel’s Python runtime** (`api/tts.py`, `api/requirements.txt`). On HTTPS with a non-loopback hostname (including `*.vercel.app`), the SPA uses **`[origin]/api/tts`** automatically.
 
-(If you also serve the app on `www.learnimo.vercel.app`, include that origin too.)
+**Do not** ship `window.__IMO_EDGE_TTS_BASE = "http://127.0.0.1:8787"` to production, or every visitor’s browser calls **localhost on their own device**. This repo’s snippet only sets that base on `localhost` / `127.0.0.1` / `::1`.
 
-`vercel.json` in this repo publishes the **`www/`** folder when the project’s **Root Directory** is the repository root (see [Vercel `outputDirectory`](https://vercel.com/docs/project-configuration#outputdirectory)). If your Vercel project is already configured with Root Directory **`www`**, remove or adjust `outputDirectory` so you are not nesting `www` twice.
+Deploy from the **repository root** so Vercel bundles **`www/`** (`outputDirectory`) and **`api/`** (functions). Root Directory **`www`** alone would omit `api/`—use repo root instead, or duplicate function layout under that root.
+
+Separate **local** neural TTS still uses **`tts-server/server.py`** (`IMO_TTS_CORS` applies only when that process is publicly reachable).
 
 ## File structure
 
 ```
 imo/
+├── api/              Vercel Python: GET /api/tts (neural pronunciation on deploy)
+│   ├── tts.py
+│   └── requirements.txt
 ├── www/
 │   ├── index.html    Markup shell, loads CSS + JS in order
 │   └── src/
@@ -74,7 +75,7 @@ imo/
 │       ├── state.js      App state, localStorage persistence, helpers, TTS
 │       ├── render.js     DOM rendering for cats / cards / quiz / progress
 │       └── app.js        Event wiring + bootstrap
-├── tts-server/       Python edge-tts bridge (optional; Neural TTS for dev)
+├── tts-server/       Python edge-tts bridge (optional; local dev)
 └── README.md
 ```
 
