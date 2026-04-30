@@ -1,0 +1,693 @@
+japanese,english,Categories,emoji
+こんにちは,"hello, good afternoon",greetings,👋
+おはようございます,good morning (polite),greetings,🌅
+おはよう,good morning (casual),greetings,☀️
+こんばんは,good evening,greetings,🌆
+おやすみなさい,good night (polite),greetings,🌙
+おやすみ,good night (casual),greetings,😴
+さようなら,goodbye (formal),greetings,🎩
+じゃあね,bye (casual),greetings,✌️
+ありがとうございます,thank you (polite),greetings,🙏
+ありがとう,thank you (casual),greetings,💐
+すみません,"excuse me, I'm sorry",greetings,🔔
+ごめんなさい,I'm sorry,greetings,😔
+どういたしまして,you're welcome,greetings,😊
+はじめまして,nice to meet you,greetings,🤝
+よろしくおねがいします,please treat me well,greetings,🌸
+おげんきですか,how are you?,greetings,💬
+げんきです,I'm fine,greetings,😄
+いただきます,let's eat (before meal),greetings,🍽️
+ごちそうさまでした,thank you for the meal,greetings,🍱
+いってきます,I'm heading out,greetings,🚶
+いってらっしゃい,have a good trip (response),greetings,✈️
+ただいま,I'm home,greetings,🏠
+おかえり,welcome back,greetings,🏡
+どうも,thanks,greetings,😌
+どうぞ,please,greetings,🙌
+ええ,yes,greetings,✅
+はい,yes,greetings,↩️
+いいえ,no,greetings,❌
+あまり,not very,greetings,😐
+わたくし,"(humble) I,myself",greetings,🙇
+わたし,"I,myself",greetings,🧍
+いかが,how,greetings,🤔
+いくつ,"how many?,how old?",greetings,🔢
+いくら,how much?,greetings,💰
+どう,"how,in what way",greetings,❓
+しかし,However,greetings,↔️
+どうして,for what reason,greetings,🔍
+なん/なに,what,greetings,❔
+どこ,where,greetings,📍
+いつ,when,greetings,⏰
+だれ,who,greetings,👤
+どなた,who,greetings,👤
+なぜ,why,greetings,🤷
+もっと,more,greetings,➕
+たいへん,very,greetings,‼️
+とても,very,greetings,🔁
+いっしょ,together,greetings,🤗
+また,"again,and",greetings,🔄
+そうして/そして,And,greetings,＆
+でも,but,greetings,🔀
+それでは,in that situation,greetings,💡
+ときどき,sometimes,greetings,🕐
+それ,that,greetings,👉
+その,That,greetings,☝️
+あれ,that,greetings,🗺️
+この,This,greetings,👈
+これ,This,greetings,🧭
+こっち,this person or way,greetings,🧑
+こちら,this person or way,greetings,🧭
+ことし,this year,greetings,📅
+じゃ/じゃあ,well then…,greetings,💬
+では,with that...,greetings,👉
+まだ,"yet,still",greetings,💬
+いち,one,numbers,1️⃣
+ひとつ,one,numbers,⌛
+ひとり,one person,numbers,🧑
+かかる,to take time or money,numbers,💵
+ふたつ,two,numbers,2️⃣
+に,two,numbers,👫
+ふたり,two people,numbers,👫
+どちら,which of two,numbers,⚖️
+さん,Three,numbers,3️⃣
+みっつ,three,numbers,3️⃣
+どれ,which (of three or more),numbers,🔀
+し / よん,Four,numbers,4️⃣
+よっつ,four,numbers,4️⃣
+いつつ,five,numbers,5️⃣
+ご,Five,numbers,5️⃣
+ろく,six,numbers,6️⃣
+むっつ,six,numbers,6️⃣
+ななつ,seven,numbers,7️⃣
+しち / なな,Seven,numbers,7️⃣
+やっつ,eight,numbers,8️⃣
+はち,eight,numbers,📏
+きゅう / く,Nine,numbers,9️⃣
+ここのつ,Nine,numbers,9️⃣
+じゅう とお,Ten,numbers,🔟
+まん,ten thousand,numbers,💫
+ひゃく,hundred,numbers,💯
+せん,Thousand,numbers,🔢
+はん,half,numbers,½
+はんぶん,half minute,numbers,⏱️
+はじめて,for the first time,numbers,🌟
+じかん,Time,numbers,🕊️
+はたち,"20 years old,20th year",numbers,🎊
+いちばん,"best, first",numbers,🥇
+グラム,Gram,numbers,🏋️
+おおぜい,great number of people,numbers,👥
+キロ/キログラム,Kilogram,numbers,🏋️
+メートル,metre,numbers,📏
+ばんごう,number,numbers,#️⃣
+にちようび,Sunday,days,⛪
+げつようび,Monday,days,📅
+かようび,Tuesday,days,📆
+すいようび,Wednesday,days,📇
+もくようび,Thursday,days,🗓️
+きんようび,Friday,days,🎉
+どようび,Saturday,days,🏖️
+きょう,Today,days,🗒️
+おととい,day before yesterday,days,⏮️
+きのう,Yesterday,days,↩️
+あさって,day after tomorrow,days,🌄
+あした,tomorrow,days,🌄
+まいあさ,every morning,days,‼️
+ごぜん,morning,days,📅
+あさ,morning,days,📅
+けさ,this morning,days,👈
+ごご,afternoon,days,❌
+ばん,evening,days,📅
+ゆうがた,evening,days,📅
+よる,"evening,night",days,📅
+こんばん,this evening,days,👈
+まいばん,every night,days,‼️
+ゆうべ,last night,days,📅
+こんしゅう,this week,days,👈
+せんしゅう,last week,days,📅
+らいしゅう,next week,days,▶️
+いつか,"five days, fifth day",days,5️⃣
+まいにち,every day,days,🔁
+ここのか,"nine days, ninth day",days,9️⃣
+なのか,"seven days,the seventh day",days,7️⃣
+とおか,"ten days,the tenth day",days,🔟
+まいしゅう,every week,days,‼️
+ついたち,first of month,months,🗓️
+ふつか,"two days, second day of the month",months,2️⃣
+みっか,"three days, third day of the month",months,3️⃣
+よっか,"four days, fouth day of the month",months,4️⃣
+ひとつき,one month,months,1️⃣
+まいげつ/まいつき,every month,months,‼️
+こんげつ,this month,months,👈
+せんげつ,last month,months,🗓️
+らいげつ,next month,months,🗓️
+ようか,"eight days, eighth day of the month",months,8️⃣
+いちにち,first of the month,months,🗓️
+むいか,"six days, sixth day of the month",months,6️⃣
+はる,spring,seasons,🌸
+なつ,summer,seasons,☀️
+なつやすみ,summer holiday,seasons,🎌
+あき,autumn,seasons,🍂
+ふゆ,winter,seasons,❄️
+そら,Sky,seasons,🌍
+き,"tree, wood",seasons,🌍
+はな,flower,seasons,🌍
+やま,mountain,seasons,🌍
+かわ,River,seasons,🌍
+うみ,sea,seasons,🌂
+はれる,to be sunny,weather,☀️
+はれ,clear weather,weather,🌤️
+くもり,cloudy weather,weather,☁️
+くもる,"to become cloudy, to become dim",weather,🦋
+あつい,hot,weather,🌡️
+あつい,hot to the touch,weather,🌡️
+かぜ,a cold,weather,🥶
+さむい,Cold,weather,🥶
+つめたい,cold to the touch,weather,🥶
+ふる,"to fall, e.g. rain or snow",weather,🌧️
+かぜ,Wind,weather,💨
+てんき,weather,weather,🌤️
+あつい,"kind, deep, thick",weather,⛅
+ゆき,snow,weather,🌨️
+おとうさん,(honorable) father,family,👨
+おじいさん,"grandfather, male senior citizen",family,👴
+おかあさん,(honorable) mother,family,👩
+おばあさん,"grandmother, female senior-citizen",family,👵
+りょうしん,both parents,family,👨‍👩‍👧
+おにいさん,(honorable) older brother,family,👦
+あに,(humble) older brother,family,🧑
+おねえさん,(honorable) older sister,family,👧
+あね,(humble) older sister,family,🧒
+おとうと,younger brother,family,👦‍🦱
+いもうと,(humble) younger sister,family,👶
+こども,Child,family,🧸
+おとな,Adult,family,🧑
+おとこ,Man,family,🧔
+おんな,Woman,family,👱‍♀️
+ともだち,friend,family,👮
+おくさん,(honorable) wife,family,👰
+おとこのこ,Boy,family,👦
+かぞく,Family,family,👨‍👩‍👧‍👦
+おんなのこ,Girl,family,👧
+あたま,head,body,🗣️
+め,eye,body,👁️
+みみ,ear,body,👂
+はな,nose,body,👃
+くち,"mouth, opening",body,👄
+は,tooth,body,🦷
+て,hand,body,✋
+ひだり,left hand side,body,👈
+わたす,to hand over,body,🤲
+かえる,to go back,body,🔙
+あし,"foot, leg",body,🦶
+こえ,Voice,body,🎙️
+からだ,Body,body,🧍
+みがく,"to brush teeth, to polish",body,🪥
+あかい,red,colors,🔴
+あか,red,colors,😓
+あおい,blue,colors,🔵
+あお,blue,colors,🔵
+きいろい,yellow,colors,🟡
+きいろ,yellow,colors,🟡
+みどり,green,colors,🟢
+しろい,White,colors,⬜
+しろ,White,colors,⬜
+くろい,black,colors,⬛
+くろ,Black,colors,🫖
+ちゃいろ,brown,colors,🟤
+いろ,colour,colors,🎨
+みず,water,food,💧
+のみもの,a drink,food,🥤
+こうちゃ,black tea,food,🫖
+おちゃ,green tea,food,🍵
+コーヒー,Coffee,food,☕
+ぎゅうにゅう,Milk,food,🥛
+おさけ,"alcohol, rice wine",food,🍶
+ごはん,"cooked rice, meal",food,🍚
+ちゃわん,rice bowl,food,🍜
+パン,bread,food,🍞
+たまご,egg,food,🥚
+あめ,candy,food,🍬
+おかし,"sweets, candy",food,🍭
+あさごはん,breakfast,food,🥞
+ひるごはん,midday meal,food,🥡
+ゆうはん,dinner,food,🍽️
+ばんごはん,evening meal,food,🌙
+おべんとう,boxed lunch,food,📦
+おいしい,delicious,food,😋
+しょくどう,dining hall,food,🏫
+たべもの,food,food,🍲
+あめ,rain,food,🚆
+からい,Spicy,food,🌶️
+のむ,to drink,food,🥤
+ワイシャツ,business shirt,clothes,👔
+シャツ,Shirt,clothes,👕
+うわぎ,jacket,clothes,🧥
+コート,"coat, tennis court",clothes,🎾
+セーター,"sweater, jumper",clothes,🧶
+はく,"to wear,to put on trousers",clothes,👖
+ズボン,Trousers,clothes,👖
+ぼうし,hat,clothes,⏩
+くつ,Shoes,clothes,👟
+くつした,Socks,clothes,🧦
+スリッパ,Slippers,clothes,🩴
+めがね,glasses,clothes,👓
+ふく,clothes,clothes,👗
+ネクタイ,"tie,necktie",clothes,👔
+ぬぐ,to take off clothes,clothes,🧹
+しめる,to tie,clothes,🪢
+ようふく,western-style clothes,clothes,🤵
+いえ,house,house,🏠
+へや,room,house,🛋️
+と,Japanese style door,house,🚪
+となり,next door to,house,🏘️
+ドア,Western style door,house,⬅️
+まど,window,house,🪟
+だいどころ,kitchen,house,🍳
+トイレ,toilet,house,🚽
+にわ,garden,house,🌻
+テーブル,table,house,🪑
+ベッド,bed,house,🛏️
+ねる,"to go to bed,to sleep",house,➡️
+テレビ,television,house,📺
+テープレコーダー,tape recorder,house,📼
+ナイフ,knife,house,🔪
+フォーク,fork,house,🍴
+スプーン,Spoon,house,🥄
+カップ,Cup,house,☕
+はいざら,ashtray,house,🚭
+かぎ,Key,house,🔑
+おふろ,Bath,house,🛁
+ふろ,bath,house,🚿
+はこ,box,house,🚔
+カメラ,camera,house,📷
+エレベーター,elevator,house,🛗
+ふうとう,envelope,house,✉️
+ストーブ,Heater,house,🔥
+れいぞうこ,refrigerator,house,🧊
+かいだん,Stairs,house,🪜
+テープ,tape,house,📼
+とけい,"watch,clock",house,⌚
+いぬ,dog,animals,🐕
+ねこ,cat,animals,🐈
+とり,bird,animals,🐦
+さかな,Fish,animals,🐟
+どうぶつ,animal,animals,🐾
+なく,"animal noise. to chirp, roar or croak etc.",animals,🔊
+きた,North,places,⬆️
+みなみ,south,places,⬇️
+ひがし,east,places,➡️
+にし,west,places,⬅️
+みぎ,right side,places,👉
+ここ,Here,places,📌
+あっち,over there,places,👆
+むこう,over there,places,👆
+そっち,over there,places,👆
+そちら,over there,places,👆
+あそこ,over there,places,👆
+あの,that over there,places,☝️
+あちら,there,places,🗺️
+そと,Outside,places,🌳
+そば,"near, beside",places,📍
+がっこう,School,places,🏫
+びょういん,hospital,places,🏥
+ぎんこう,Bank,places,🏦
+ゆうびんきょく,post office,places,📮
+みせ,shop,places,🏪
+デパート,department store,places,🏬
+レストラン,restaurant,places,🍴
+こうえん,Park,places,🌳
+えき,station,places,🚉
+ホテル,hotel,places,🏨
+みち,street,places,🛣️
+もん,gate,places,⛩️
+はし,bridge,places,🌉
+まち,"town,city",places,🌆
+くに,Country,places,🌏
+がいこく,foreign country,places,🌐
+あと,afterwards,places,⏭️
+ところ,place,places,📍
+そこ,that place,places,🗺️
+それから,after that,places,⏩
+まえ,before,places,⏮️
+よこ,"beside,side,width",places,↔️
+はし,chopsticks,places,🥢
+えいがかん,cinema,places,🎬
+きっさてん,coffee lounge,places,☕
+たいしかん,embassy,places,🏛️
+いりぐち,entrance,places,🚪
+げんかん,entry hall,places,🏠
+でぐち,exit,places,🚶
+こうさてん,intersection,places,🛤️
+としょかん,library,places,📚
+ちず,map,places,🗺️
+なか,middle,places,🎯
+つぎ,next,places,🔮
+らいねん,next year,places,📆
+いけ,pond,places,🐸
+おじさん,"uncle, middle aged gentleman",places,🧓
+むら,village,places,🏡
+さらいねん,year after next,places,🔮
+おととし,year before last,places,📇
+くるま,"car, vehicle",transport,🚗
+じどうしゃ,Automobile,transport,🚘
+バス,bus,transport,🚌
+タクシー,taxi,transport,🚕
+じてんしゃ,Bicycle,transport,🚲
+でんしゃ,electric train,transport,🚆
+ちかてつ,underground train,transport,🚇
+きっぷ,Ticket,transport,🎫
+ひこうき,aeroplane,transport,✈️
+いしゃ,medical doctor,jobs,👨‍⚕️
+かいしゃ,Company,jobs,🏢
+しごと,Job,jobs,💼
+じゅぎょう,"lesson, class work",jobs,📖
+はたらく,to work,jobs,⚙️
+つとめる,to work for someone,jobs,👷
+がいこくじん,Foreigner,jobs,🌏
+こうばん,police box,jobs,🚔
+おんがく,Music,hobbies,🎵
+えいが,movie,hobbies,🎬
+しゃしん,photograph,hobbies,📸
+パーティー,party,hobbies,🎉
+りょこう,travel,hobbies,✈️
+プール,swimming pool,sports,🏊
+スポーツ,Sport,sports,🏅
+ギター,Guitar,instruments,🎸
+ひく,"to play an instrument with strings, including piano",instruments,🎹
+おおきな,big,adjectives,🐘
+おおきい,big,adjectives,🐘
+ちいさい,little,adjectives,🐭
+たかい,"tall, expensive",adjectives,💎
+みじかい,short,adjectives,📐
+ひくい,"short,low",adjectives,🪨
+ながい,long,adjectives,📏
+せまい,Narrow,adjectives,↕️
+ひろい,"spacious,wide",adjectives,↔️
+おもい,Heavy,adjectives,🏋️
+かるい,Light,adjectives,🪶
+おそい,"late, slow",adjectives,🐢
+ちかい,near,adjectives,🔍
+とおい,far,adjectives,🔭
+あたらしい,new,adjectives,✨
+かてい,Household,adjectives,🏠
+ふるい,old (not used for people),adjectives,🏚️
+わかい,young,adjectives,🌱
+いい/よい,good,adjectives,⭐
+わるい,bad,adjectives,💔
+ぬるい,luke warm,adjectives,🌞
+あたたかい,warm,adjectives,🌞
+やさしい,"easy, simple",adjectives,😊
+むずかしい,difficult,adjectives,🧩
+たいへん,difficult situation,adjectives,😰
+うるさい,"noisy, annoying",adjectives,📢
+にぎやか,"bustling,busy",adjectives,🏙️
+いそがしい,"busy, irritated",adjectives,😤
+きれい,"pretty, clean",adjectives,💐
+きたない,Dirty,adjectives,🗑️
+あかるい,bright,adjectives,💡
+じょうぶ,"strong, durable",adjectives,💪
+うすい,"thin,weak",adjectives,🥀
+よわい,weak,adjectives,🌾
+ふとい,fat,adjectives,🍩
+ほそい,thin,adjectives,🔒
+ひま,free time,adjectives,🕊️
+おもしろい,Interesting,adjectives,🤩
+つまらない,boring,adjectives,😑
+おなじ,same,adjectives,🟰
+きょうだい,(humble) siblings,adjectives,👫
+すくない,a few,adjectives,🤏
+おてあらい,bathroom,adjectives,🚿
+やすい,cheap,adjectives,🏷️
+かわいい,Cute,adjectives,🥰
+あぶない,dangerous,adjectives,⚠️
+はやい,early,adjectives,⏰
+たのしい,enjoyable,adjectives,🎊
+ゆうめい,famous,adjectives,⭐
+すこし,Few,adjectives,🤏
+くらい,Gloomy,adjectives,🌧️
+きらい,Hate,adjectives,👎
+しゅくだい,homework,adjectives,📋
+たくさん,many,adjectives,🌊
+おおい,many,adjectives,🌊
+いたい,painful,adjectives,🤕
+ください,Please,adjectives,🙌
+つよい,powerful,adjectives,⚡
+もんだい,problem,adjectives,❗
+はやい,quick,adjectives,⚡
+すずしい,Refreshing,adjectives,🌬️
+まるい,"round,circular",adjectives,⭕
+あまい,sweet,adjectives,🍭
+まずい,unpleasant,adjectives,😖
+やさい,vegetable,adjectives,🥦
+ほしい,want,adjectives,🌟
+れい,zero,adjectives,0️⃣
+できる,to be able to,verbs,✅
+うまれる,to be born,verbs,👶
+わかる,to be understood,verbs,💡
+だいすき,to be very likeable,verbs,😍
+こまる,to be worried,verbs,😟
+いる,"to be, to have (used for people and animals)",verbs,🧍
+ある,"to be,to have (used for inanimate objects)",verbs,📦
+なる,to become,verbs,🔓
+はじまる,to begin,verbs,🚀
+しまる,"to close, to be closed",verbs,🔒
+あく,"to open, to become open",verbs,✒️
+まがる,"to turn,to bend",verbs,↩️
+する,to do,verbs,🔨
+やる,to do,verbs,🔨
+ゆく,to go,verbs,➡️
+いく,to go,verbs,➡️
+わたる,to go across,verbs,🌉
+でかける,to go out,verbs,🚶
+くる,to come,verbs,🛑
+とまる,to come to a halt,verbs,🛑
+かえす,to return something,verbs,↩️
+はいる,"to enter,to contain",verbs,🚪
+でる,"to appear,to leave",verbs,👻
+つく,to arrive at,verbs,📍
+あう,to meet,verbs,🤝
+きく,"to hear, to listen to, to ask",verbs,🙋
+はなす,to speak,verbs,🗣️
+よむ,to read,verbs,📖
+かく,to write,verbs,✍️
+おぼえる,to remember,verbs,🧠
+わすれる,to forget,verbs,🫥
+しる,to know,verbs,💡
+みる,"to see, to watch",verbs,👀
+あびる,"to bathe, to shower",verbs,🪄
+みせる,to show,verbs,🪄
+たべる,to eat,verbs,🍽️
+つくる,to make,verbs,🔧
+あそぶ,"to play, to make a visit",verbs,🎮
+かう,to buy,verbs,🛍️
+うる,to sell,verbs,💰
+あける,to open,verbs,🔓
+しめる,to close something,verbs,🔒
+おく,to put,verbs,📥
+いれる,to put in,verbs,📥
+きる,to put on from the shoulders down,verbs,🧥
+だす,to put out,verbs,📤
+とる,to take a photo or record a film,verbs,💿
+とる,to take something,verbs,✋
+あげる,to give,verbs,🎁
+かりる,to borrow,verbs,🤲
+かす,to lend,verbs,🫱
+あらう,to wash,verbs,🧼
+そうじする,"to clean, to sweep",verbs,🧹
+れんしゅうする,to practice,verbs,🏋️
+おしえる,"to teach, to tell",verbs,🎓
+ならう,to learn,verbs,📚
+すわる,to sit,verbs,🪑
+ならぶ,"to line up,to stand in a line",verbs,🚶
+たつ,to stand,verbs,🧍
+やすむ,to rest,verbs,😴
+あるく,to walk,verbs,🚶
+はしる,to run,verbs,🏃
+およぐ,to swim,verbs,🏊
+かける,to call by phone,verbs,📞
+よぶ,"to call out,to invite",verbs,📣
+おわる,to finish,verbs,✅
+ひく,to pull,verbs,🔙
+おす,"to push, to stamp something",verbs,🤜
+つける,to turn on,verbs,💡
+けす,"to erase, to turn off power",verbs,🔦
+つかう,to use,verbs,🔧
+まつ,to wait,verbs,⏳
+いる,to need,verbs,📌
+ぜんぶ,All,verbs,👍
+だいじょうぶ,all right,verbs,👍
+もう,already,verbs,✔️
+ぎゅうにく,Beef,verbs,🥩
+いす,chair,verbs,🪑
+とりにく,chicken meat,verbs,🍗
+きょうしつ,Classroom,verbs,🏫
+たいせつ,important,verbs,❗
+にもつ,luggage,verbs,🧳
+にく,meat,verbs,🥩
+ちかく,near,verbs,🔍
+ひる,"noon, daytime",verbs,🌞
+よく,"often, well",verbs,🔁
+ぶたにく,pork,verbs,🐖
+ぶんしょう,"sentence,text",verbs,📝
+けっこう,"splendid, enough",verbs,🌟
+まっすぐ,"straight ahead,direct",verbs,⬆️
+さとう,Sugar,verbs,🍬
+たのむ,to ask,verbs,🙋
+さく,to bloom,verbs,🌸
+ふく,to blow,verbs,💨
+のぼる,to climb,verbs,🧗
+コピーする,to copy,verbs,📋
+きる,to cut,verbs,✂️
+しぬ,to die,verbs,💀
+ちがう,to differ,verbs,🔀
+きえる,to disappear,verbs,🌫️
+とぶ,"to fly,to hop",verbs,🕊️
+おりる,"to get off, to descend",verbs,⬇️
+のる,"to get on,to ride",verbs,🚌
+つかれる,to get tired,verbs,😓
+おきる,to get up,verbs,⏰
+もつ,to hold,verbs,🫳
+ならべる,"to line up,to set up",verbs,📐
+すむ,to live in,verbs,🏡
+なくす,to lose something,verbs,🔍
+いう,to say,verbs,🗣️
+うたう,to sing,verbs,🎤
+すう,"to smoke, to suck",verbs,🚬
+はる,to stick,verbs,📌
+さす,"to stretch out hands, to raise an umbrella",verbs,☂️
+さんぽする,to stroll,verbs,🌸
+ほんとう,truth,verbs,📖
+より、ほう,Used for comparison.,verbs,⚖️
+せんたく,Washing,verbs,🫧
+ひと,person,classroom,🧑
+かた,"person, way of doing",classroom,🧭
+だれか,somebody,classroom,👤
+みなさん,everyone,classroom,👥
+みんな,everyone,classroom,👥
+もの,thing,classroom,📦
+ことば,"word, language",classroom,🗣️
+いみ,meaning,classroom,💬
+えいご,English language,classroom,🇬🇧
+しつもん,Question,classroom,❓
+こたえる,to answer,classroom,💬
+テスト,test,classroom,📝
+ほん,book,classroom,📕
+ほんだな,bookshelves,classroom,📚
+ノート,"notebook,exercise book",classroom,📓
+じびき,Dictionary,classroom,📖
+じしょ,Dictionary,classroom,📖
+ボールペン,ball-point pen,classroom,🖊️
+まんねんひつ,fountain pen,classroom,🖋️
+ペン,pen,classroom,✏️
+えんぴつ,pencil,classroom,✏️
+りゅうがくせい,overseas student,classroom,🎒
+がくせい,Student,classroom,🧑‍🎓
+せんせい,"teacher, doctor",classroom,👨‍🏫
+クラス,Class,classroom,🏫
+さくぶん,"composition, writing",classroom,📝
+はなし,"talk,story",classroom,💬
+てがみ,letter,classroom,💌
+べんきょうする,to study,classroom,📖
+でんき,"electricity,electric light",classroom,💡
+いつも,always,classroom,♾️
+どの,which,classroom,🔀
+どっち,which,classroom,🔀
+ちょっと,somewhat,classroom,🤏
+シャワー,Shower,classroom,🚿
+かど,a corner,classroom,📐
+コップ,a glass,classroom,🥛
+かびん,a vase,classroom,🏺
+もういちど,again,classroom,🔁
+アパート,apartment,classroom,🏢
+へん,area,classroom,🗺️
+おばさん,Aunt,classroom,👩
+かばん,"bag, basket",classroom,👜
+はじめ,beginning,classroom,🚀
+うしろ,behind,classroom,⬅️
+した,Below,classroom,⬇️
+たんじょうび,birthday,classroom,🎂
+たてもの,building,classroom,🏗️
+せびろ,business suit,classroom,🤵
+バター,butter,classroom,🧈
+ボタン,button,classroom,🔘
+カレンダー,calendar,classroom,📅
+かんじ,Chinese character,classroom,漢
+ろうか,corridor,classroom,🚶
+りょうり,cuisine,classroom,🍽️
+カレー,Curry,classroom,🍛
+つくえ,desk,classroom,🖥️
+せっけん,Economy,classroom,💹
+など,et cetera,classroom,…
+まいねん/まいとし,every year,classroom,📆
+ちょうど,exactly,classroom,✔️
+おまわりさん,friendly term for policeman,classroom,👮
+くだもの,Fruit,classroom,🍎
+だんだん,gradually,classroom,📈
+やおや,greengrocer,classroom,🥬
+ハンカチ,handkerchief,classroom,🧣
+げんき,"health, vitality",classroom,💪
+せ,"height, stature",classroom,📏
+びょうき,illness,classroom,🤒
+すぐに,Instantly,classroom,⚡
+キロ/キロメートル,Kilometer,classroom,🛣️
+きょねん,last year,classroom,📅
+たて,"length,height",classroom,📐
+すき,Likeable,classroom,💕
+ちいさな,little,classroom,🐭
+ざっし,Magazine,classroom,📰
+けっこん,Marriage,classroom,💍
+マッチ,match,classroom,🏆
+くすり,medicine,classroom,💊
+おかね,money,classroom,💵
+なまえ,name,classroom,🏷️
+ニュース,news,classroom,🗞️
+しんぶん,newspaper,classroom,📄
+いま,now,classroom,⏱️
+うえ,on top of,classroom,⬆️
+じぶん,Oneself,classroom,🪞
+ほか,"other, the rest",classroom,🔖
+ページ,page,classroom,📄
+かみ,paper,classroom,📄
+ペット,pet,classroom,🐾
+え,picture,classroom,🖼️
+おさら,"plate, dish",classroom,🍽️
+ポケット,pocket,classroom,🧥
+けいかん,policeman,classroom,👮
+ポスト,post,classroom,📬
+きって,postage stamp,classroom,📮
+はがき,postcard,classroom,📬
+たぶん,probably,classroom,🤔
+せいと,Pupil,classroom,🎒
+しずか,Quiet,classroom,🤫
+ラジオ,radio,classroom,📻
+ラジカセ / ラジオカセット,radio cassette player,classroom,📼
+レコード,record,classroom,💿
+やすみ,"rest,holiday",classroom,🏖️
+フィルム,roll of film,classroom,🎞️
+しお,Salt,classroom,🧂
+かいもの,Shopping,classroom,🛒
+じょうず,Skillful,classroom,🤦
+スカート,Skirt,classroom,👗
+ゆっくりと,slowly,classroom,🐢
+うた,song,classroom,🎶
+しょうゆ,soy sauce,classroom,🍱
+りっぱ,splendid,classroom,🌟
+おなか,stomach,classroom,🫃
+こんな,Such,classroom,🎭
+でんわ,telephone,classroom,☎️
+さき,"the future, previous",classroom,🔮
+たばこ,"tobacco,cigarettes",classroom,🚬
+はつか,"twenty days,twentieth",classroom,📅
+あの,um...,classroom,💭
+かさ,Umbrella,classroom,☂️
+だいがく,university,classroom,🎓
+いや,unpleasant,classroom,😖
+へた,unskillful,classroom,🤦
+べんり,"useful, convenient",classroom,🛠️
+いろいろ,various,classroom,🎨
+さいふ,Wallet,classroom,👛
+さあ,well…,classroom,🤷
+とし,year,classroom,📅
+あなた,you,classroom,👉
+ゼロ,Zero,classroom,0️⃣

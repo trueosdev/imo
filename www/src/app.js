@@ -148,6 +148,56 @@ const goToast = document.getElementById("go-toast");
 const catsEl = document.getElementById("cats");
 const chipRowEl = document.querySelector(".toggle-row");
 const vocabEl = document.getElementById("vocab");
+const jlptLevelSelect = document.getElementById("jlpt-level-select");
+
+function getPersistedJlptLevel() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return "N5";
+    const parsed = JSON.parse(raw);
+    const level = String(parsed?.jlptLevel || "N5").toUpperCase();
+    return /^N\d+$/.test(level) ? level : "N5";
+  } catch (_) {
+    return "N5";
+  }
+}
+
+function renderJlptLevelOptions() {
+  if (!jlptLevelSelect) return;
+  const levels = Array.isArray(state.availableJlptLevels) && state.availableJlptLevels.length
+    ? state.availableJlptLevels
+    : ["N5"];
+  jlptLevelSelect.innerHTML = levels
+    .map((level) => `<option value="${escapeHtml(level)}">JLPT ${escapeHtml(level)}</option>`)
+    .join("");
+  jlptLevelSelect.value = state.jlptLevel;
+}
+
+function setJlptLoadingUi(level) {
+  if (!vocabEl) return;
+  vocabEl.innerHTML = `<div class="empty-state">Loading JLPT ${escapeHtml(level)} vocabulary…</div>`;
+}
+
+async function switchJlptLevel(level) {
+  const target = String(level || "N5").toUpperCase();
+  if (target === state.jlptLevel && ORDER.length) return;
+
+  setJlptLoadingUi(target);
+  await loadJlptDataset(target);
+  state.jlptLevel = target;
+  state.currentCategory = null;
+  state.kanaLearn = null;
+  state.quiz.currentWordIndex = -1;
+  state.quiz.lastWordIndex = -1;
+  state.quiz.selected = "";
+  state.quiz.answered = false;
+  hydrateFlippedForLevel(state.jlptLevel);
+  renderJlptLevelOptions();
+  renderCats();
+  renderSection();
+  hideGoToast();
+  saveState();
+}
 
 function smoothScrollTo(el) {
   if (!el) return;
@@ -237,6 +287,18 @@ function setupCatLiquidHover() {
 }
 
 function setupEvents() {
+  if (jlptLevelSelect) {
+    jlptLevelSelect.addEventListener("change", async (e) => {
+      const next = String(e.target.value || "N5").toUpperCase();
+      try {
+        await switchJlptLevel(next);
+      } catch (err) {
+        console.error(err);
+        renderSection();
+      }
+    });
+  }
+
   catsEl.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-cat]");
     if (!btn) return;
@@ -577,11 +639,44 @@ vocab.addEventListener("submit", (ev) => {
   }
 }
 
-loadState();
-setupEvents();
-syncControlStates();
-renderCats();
-renderSection();
+async function bootstrapApp() {
+  const manifestLevels = await loadJlptManifest();
+  state.availableJlptLevels = manifestLevels;
+
+  const persisted = getPersistedJlptLevel();
+  const initialLevel = manifestLevels.includes(persisted) ? persisted : manifestLevels[0] || "N5";
+  let loadedLevel = initialLevel;
+  setJlptLoadingUi(initialLevel);
+
+  try {
+    await loadJlptDataset(initialLevel);
+  } catch (err) {
+    console.error(err);
+    if (initialLevel !== "N5") {
+      await loadJlptDataset("N5");
+      loadedLevel = "N5";
+    }
+  }
+
+  loadState();
+  if (!state.availableJlptLevels.includes(state.jlptLevel) || state.jlptLevel !== loadedLevel) {
+    state.jlptLevel = loadedLevel;
+  }
+  hydrateFlippedForLevel(state.jlptLevel);
+  renderJlptLevelOptions();
+
+  setupEvents();
+  syncControlStates();
+  renderCats();
+  renderSection();
+}
+
+bootstrapApp().catch((err) => {
+  console.error(err);
+  if (vocabEl) {
+    vocabEl.innerHTML = '<div class="empty-state">Could not load JLPT vocabulary.</div>';
+  }
+});
 
 /* Restore chrome transitions after hydration: defer until fonts settle (less FOUT on labels),
  * with a max wait so `.chrome-boot` never sticks. */

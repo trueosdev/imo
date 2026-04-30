@@ -11,6 +11,9 @@ const SPEAKER_SVG = '<svg class="lucide" width="14" height="14" viewBox="0 0 24 
 const SPEAKER_SVG_LG = '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
 /* Lucide check (used inside the gradient learned-badge on flipped cards). */
 const CHECK_SVG = '<svg class="lucide" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+/* Same paths as lucide/check + lucide/x, sized for inline kana-drill feedback. */
+const KANA_STATUS_CHECK = '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+const KANA_STATUS_X = '<svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 
 function speakBtnHtml(text, large) {
   if (!supportsTTS()) return "";
@@ -74,14 +77,13 @@ function renderCats() {
 
 function renderCardMode(words) {
   if (!words.length) {
-    return `<div class="empty-state"><span class="ico" aria-hidden="true">🌧️</span>No words match this filter.<br><span style="opacity:.7;font-weight:600">Try clearing search or turning off "Only unlearned".</span></div>`;
+    return `<div class="empty-state">No words match this filter.<br><span style="opacity:.7;font-weight:600">Try clearing search or turning off "Only unlearned".</span></div>`;
   }
   return `<div class="card-grid">${words.map((w, i) => {
     const isFlipped = state.flippedByCategory[state.currentCategory].has(w.index);
+    const emojiRow = w.e ? `<div class="c-emoji" aria-hidden="true">${escapeHtml(w.e)}</div>` : "";
     const romaji = state.showRomaji ? `<div class="c-romaji">${escapeHtml(w.r)}</div>` : "";
     const speakBtn = speakBtnHtml(w.jp, false);
-    const emojiSize = Number(w.eSize);
-    const emojiStyle = Number.isFinite(emojiSize) && emojiSize > 0 ? ` style="font-size:${emojiSize}rem"` : "";
     return `<div class="card${isFlipped ? " flipped is-learned" : ""}" role="button" tabindex="0" data-flip="${w.index}" style="animation-delay:${Math.min(i * 25, 240)}ms" aria-label="${escapeHtml(w.jp)}, ${escapeHtml(w.en)}. ${isFlipped ? "Marked learned." : "Tap to reveal meaning."}">
       <div class="card-inner">
         <div class="card-front">
@@ -92,7 +94,7 @@ function renderCardMode(words) {
         </div>
         <div class="card-back">
           <span class="learned-badge" aria-hidden="true">${CHECK_SVG}</span>
-          <div class="c-emoji" aria-hidden="true"${emojiStyle}>${escapeHtml(w.e)}</div>
+          ${emojiRow}
           <div class="c-en">${escapeHtml(w.en)}</div>
           ${romaji}
         </div>
@@ -114,8 +116,7 @@ function answerClass(option) {
 
 /* Lucide icons used everywhere a category is represented in chrome:
  * the category chips, the cards/quiz section header, and every group
- * header in the Dictionary view. The per-word emoji on card BACKS is
- * the actual content of a flashcard, so those stay as-is. */
+ * header in the Dictionary view. Flashcard backs show optional emoji, EN, (+ optional romaji). */
 function lucide(inner, size) {
   return `<svg class="lucide" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
 }
@@ -167,13 +168,13 @@ function buildDictionaryGroups() {
     let words = cat.words.map((w, idx) => ({ ...w, catKey, idx, isLearned: flipped.has(idx) }));
     if (q) {
       words = words.filter((w) =>
-        [w.jp, w.r, w.en].some((v) => String(v).toLowerCase().includes(q))
+        [w.jp, w.r, w.en, w.e].some((v) => String(v).toLowerCase().includes(q))
       );
     }
     if (state.filterUnlearnedOnly) {
       words = words.filter((w) => !w.isLearned);
     }
-    return { key: catKey, label: cat.label, emoji: cat.emoji, color: cat.color, words };
+    return { key: catKey, label: cat.label, color: cat.color, words };
   }).filter((g) => g.words.length > 0);
 }
 
@@ -181,19 +182,20 @@ function renderDictionaryMode() {
   const groups = buildDictionaryGroups();
 
   if (!groups.length) {
-    return `<div class="empty-state"><span class="ico" aria-hidden="true">🔍</span>No words match your search.<br><span style="opacity:.7;font-weight:600">Try a different term${state.filterUnlearnedOnly ? ' or turn off "Only unlearned"' : ""}.</span></div>`;
+    return `<div class="empty-state">No words match your search.<br><span style="opacity:.7;font-weight:600">Try a different term${state.filterUnlearnedOnly ? ' or turn off "Only unlearned"' : ""}.</span></div>`;
   }
 
   const groupsHtml = groups.map((g) => {
     const rows = g.words.map((w) => {
       const speakBtn = speakBtnHtml(w.jp, false);
       const romaji = state.showRomaji ? `<div class="dict-romaji">${escapeHtml(w.r)}</div>` : "";
+      const emojiCell = w.e ? `<span class="dict-emoji" aria-hidden="true">${escapeHtml(w.e)}</span>` : "";
       return `<li class="dict-row${w.isLearned ? " is-learned" : ""}">
         <div class="dict-jp-block">
           <div class="dict-jp">${escapeHtml(w.jp)}</div>
           ${romaji}
         </div>
-        <div class="dict-en">${escapeHtml(w.en)}</div>
+        <div class="dict-meaning">${emojiCell}<div class="dict-en">${escapeHtml(w.en)}</div></div>
         ${speakBtn}
       </li>`;
     }).join("");
@@ -503,11 +505,12 @@ function renderKanaLearnShell() {
   const statusHtml =
     flash === "ok"
       ? `<div class="kana-learn-status kana-learn-status--ok" role="status">
-          <span class="kana-learn-glyph" aria-hidden="true">✓</span> Correct
+          ${KANA_STATUS_CHECK}
+          Correct
         </div>`
       : flash === "bad"
       ? `<div class="kana-learn-status kana-learn-status--bad" role="alert">
-          <span class="kana-learn-glyph" aria-hidden="true">✗</span>
+          ${KANA_STATUS_X}
           Expected <strong>${escapeHtml(cur.roma)}</strong>${hintN}
         </div>`
       : `<div class="kana-learn-status-slot" aria-hidden="true"></div>`;
@@ -519,7 +522,7 @@ function renderKanaLearnShell() {
     <div class="kana-learn-drill-inner">
       <div class="kana-learn-meta">
         <span class="kana-learn-progress-num">${progress}</span>
-        <span class="kana-learn-score-mini">✓ ${s.correct} · ✗ ${s.missed}</span>
+        <span class="kana-learn-score-mini">${s.correct} correct · ${s.missed} missed</span>
         <button type="button" class="chip kana-learn-exit-chip" id="kana-learn-exit">Exit drill</button>
       </div>
       <form class="kana-learn-form${flash ? " kana-learn-form--frozen" : ""}" id="kana-learn-form" action="#" autocomplete="off">
@@ -551,7 +554,7 @@ function renderKanaLearnShell() {
 
 function renderQuizMode(words) {
   if (words.length < 1) {
-    return `<div class="empty-state"><span class="ico" aria-hidden="true">🎯</span>Need at least one word to quiz.<br><span style="opacity:.7;font-weight:600">Adjust filters to widen the pool.</span></div>`;
+    return `<div class="empty-state">Need at least one word to quiz.<br><span style="opacity:.7;font-weight:600">Adjust filters to widen the pool.</span></div>`;
   }
   let current = words.find((w) => w.index === state.quiz.currentWordIndex);
   if (!current) {
@@ -574,12 +577,17 @@ function renderQuizMode(words) {
   const yayMarkup = correct
     ? `<span class="quiz-yay-slot ${yaySlotClass}" aria-hidden="true"><img class="quiz-yay" src="src/yay.svg" alt="" width="120" height="56" draggable="false" decoding="async"></span>`
     : "";
+  const quizEmojiRow =
+    state.quiz.answered && current.e
+      ? `<div class="quiz-emoji" aria-hidden="true">${escapeHtml(current.e)}</div>`
+      : "";
   return `<div class="quiz-card">
     ${yayMarkup}
     <div class="quiz-prompt">
       <div class="quiz-prompt-label">What does this mean?</div>
       <div class="quiz-jp">${escapeHtml(current.jp)} ${speakBtn}</div>
       ${state.showRomaji ? `<div class="quiz-romaji">${escapeHtml(current.r)}</div>` : ""}
+      ${quizEmojiRow}
     </div>
     <div class="answers">${state.quiz.options.map((o, i) => `<button class="answer-btn ${answerClass(o)}" data-answer="${escapeHtml(o)}" data-letter="${letters[i] || ""}" type="button">${escapeHtml(o)}</button>`).join("")}</div>
     <div class="quiz-actions">

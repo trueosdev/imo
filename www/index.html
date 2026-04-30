@@ -118,6 +118,10 @@
         <svg class="lucide" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>
+    <div class="jlpt-picker-wrap">
+      <label class="sr-only" for="jlpt-level-select">JLPT level</label>
+      <select id="jlpt-level-select" class="jlpt-level-select" aria-label="JLPT level"></select>
+    </div>
     <div class="toggle-row">
       <div class="toolbar-kana-drill">
         <button type="button" class="chip" id="kana-learn-start" data-state="static" aria-label="Start Kana typing drill">
@@ -184,6 +188,7 @@
 })();
 </script>
 <script src="src/data.js" defer></script>
+<script src="src/vocab-csv.js" defer></script>
 <script src="src/state.js" defer></script>
 <script src="src/render.js" defer></script>
 <script src="src/app.js" defer></script>

@@ -642,6 +642,20 @@ html.chrome-boot .theme-toggle .lucide {
 }
 
 .search-wrap { position: relative; width: 100%; }
+.jlpt-picker-wrap { width: 100%; }
+.jlpt-level-select {
+  width: 100%;
+  background: var(--surface);
+  border: none;
+  border-radius: 14px;
+  padding: 0.72rem 0.85rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text);
+  appearance: none;
+  -webkit-appearance: none;
+}
+.jlpt-level-select:focus { outline: none; background: var(--surface); }
 .search-ico {
   position: absolute;
   left: 0.85rem;
@@ -1086,8 +1100,13 @@ html.chrome-boot .theme-toggle .lucide {
   text-align: center;
   opacity: 0.7;
 }
-.c-emoji { font-size: 2.4rem; line-height: 1; margin-bottom: 0.45rem; }
 .c-en { font-size: 1.05rem; font-weight: 900; letter-spacing: -0.01em; }
+.c-emoji {
+  font-size: clamp(2rem, 8vw, 2.75rem);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  user-select: none;
+}
 .c-romaji {
   font-size: 0.72rem;
   color: var(--muted);
@@ -1240,6 +1259,12 @@ html.chrome-boot .theme-toggle .lucide {
   margin-top: 0.5rem;
   letter-spacing: 0.06em;
 }
+.quiz-emoji {
+  font-size: clamp(2rem, 6vw, 2.6rem);
+  line-height: 1;
+  margin-top: 0.65rem;
+  user-select: none;
+}
 .quiz-prompt-label {
   font-size: 0.7rem;
   font-weight: 800;
@@ -1293,13 +1318,13 @@ html.chrome-boot .theme-toggle .lucide {
   background: linear-gradient(135deg, rgba(47, 158, 68, 0.12), rgba(47, 158, 68, 0.04));
   color: var(--success);
 }
-.answer-btn.correct::before { background: var(--success); color: #fff; content: "✓"; }
+.answer-btn.correct::before { background: var(--success); color: #fff; content: "+"; font-size: 1rem; line-height: 1; }
 .answer-btn.wrong {
   background: linear-gradient(135deg, rgba(224, 49, 49, 0.12), rgba(224, 49, 49, 0.04));
   color: var(--danger);
   animation: shake 0.35s ease;
 }
-.answer-btn.wrong::before { background: var(--danger); color: #fff; content: "✕"; }
+.answer-btn.wrong::before { background: var(--danger); color: #fff; content: "-"; font-size: 1rem; line-height: 1; font-weight: 900; }
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
@@ -1529,6 +1554,19 @@ html.chrome-boot .theme-toggle .lucide {
   max-width: 14em;
   line-height: 1.25;
 }
+.dict-meaning {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.dict-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+  flex-shrink: 0;
+  user-select: none;
+}
 .dict-row .speak-btn {
   width: 30px;
   height: 30px;
@@ -1546,9 +1584,12 @@ html.chrome-boot .theme-toggle .lucide {
 }
 @media (max-width: 480px) {
   .dict-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; }
-  .dict-en {
+  .dict-meaning {
     grid-column: 1 / -1;
     grid-row: 2;
+    justify-content: flex-start;
+  }
+  .dict-en {
     text-align: left;
     font-size: 0.86rem;
     color: var(--text-soft);

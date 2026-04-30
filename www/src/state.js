@@ -156,6 +156,9 @@ const state = {
   shuffle: false,
   showRomaji: true,
   theme: "light",
+  jlptLevel: "N5",
+  availableJlptLevels: ["N5"],
+  jlptProgress: {},
   flippedByCategory: {},
   todayCount: 0,
   todayDate: "",
@@ -193,10 +196,17 @@ function persistableFlipped() {
   return out;
 }
 
+function hydrateFlippedForLevel(level) {
+  state.flippedByCategory = toSetMap(state.jlptProgress[level] || {});
+}
+
+function migrateLegacyJlptProgress(parsed) {
+  const legacy = parsed?.flippedByCategory;
+  if (!legacy || typeof legacy !== "object") return {};
+  return { N5: legacy };
+}
+
 function loadState() {
-  ORDER.forEach((k) => {
-    state.flippedByCategory[k] = new Set();
-  });
   let parsed = null;
   try {
     const raw = storage.getItem(STORAGE_KEY);
@@ -215,13 +225,28 @@ function loadState() {
     state.shuffle = !!parsed.shuffle;
     state.showRomaji = parsed.showRomaji !== false;
     state.theme = parsed.theme === "dark" ? "dark" : "light";
-    state.flippedByCategory = toSetMap(parsed.flippedByCategory);
+    state.jlptLevel = /^N\d+$/.test(String(parsed.jlptLevel || "").toUpperCase())
+      ? String(parsed.jlptLevel).toUpperCase()
+      : "N5";
+    const nestedProgress = parsed.jlptProgress && typeof parsed.jlptProgress === "object"
+      ? parsed.jlptProgress
+      : migrateLegacyJlptProgress(parsed);
+    state.jlptProgress = nestedProgress;
+    hydrateFlippedForLevel(state.jlptLevel);
     state.todayDate = typeof parsed.todayDate === "string" ? parsed.todayDate : "";
     state.todayCount = Number.isFinite(parsed.todayCount) ? parsed.todayCount : 0;
   } else {
     const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     state.theme = prefersDark ? "dark" : "light";
+    state.jlptLevel = "N5";
+    state.jlptProgress = {};
+    hydrateFlippedForLevel(state.jlptLevel);
   }
+
+  if (!state.flippedByCategory || !Object.keys(state.flippedByCategory).length) {
+    hydrateFlippedForLevel(state.jlptLevel);
+  }
+
   if (state.todayDate !== todayKey()) {
     state.todayDate = todayKey();
     state.todayCount = 0;
@@ -229,6 +254,8 @@ function loadState() {
 }
 
 function saveState() {
+  if (!state.jlptProgress || typeof state.jlptProgress !== "object") state.jlptProgress = {};
+  state.jlptProgress[state.jlptLevel] = persistableFlipped();
   const payload = {
     currentCategory: state.currentCategory,
     mode: state.mode,
@@ -237,7 +264,8 @@ function saveState() {
     shuffle: state.shuffle,
     showRomaji: state.showRomaji,
     theme: state.theme,
-    flippedByCategory: persistableFlipped(),
+    jlptLevel: state.jlptLevel,
+    jlptProgress: state.jlptProgress,
     todayDate: state.todayDate,
     todayCount: state.todayCount,
   };
@@ -391,7 +419,7 @@ function currentWordsFiltered() {
       ? ""
       : state.searchQuery.trim().toLowerCase();
   let out = words.filter(
-    (w) => !q || [w.jp, w.r, w.en].some((v) => String(v).toLowerCase().includes(q))
+    (w) => !q || [w.jp, w.r, w.en, w.e].some((v) => String(v).toLowerCase().includes(q))
   );
   if (state.filterUnlearnedOnly) {
     out = out.filter((w) => !isWordLearned(w));
