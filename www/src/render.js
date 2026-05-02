@@ -719,7 +719,7 @@ function syncControlStates() {
   });
   document
     .getElementById("mode-pill")
-    .setAttribute("data-pos", String(MODE_POS[state.mode] ?? 1));
+    .setAttribute("data-pos", String(MODE_POS[state.mode] ?? 0));
 
   setChip("toggle-unlearned", state.filterUnlearnedOnly);
   setChip("shuffle-btn", state.shuffle);

@@ -150,7 +150,7 @@ const state = {
   /* Starts as null on every load so the user has a "blank canvas":
    * cards/quiz are hidden until they explicitly pick a category. */
   currentCategory: null,
-  mode: "cards",
+  mode: "dictionary",
   searchQuery: "",
   filterUnlearnedOnly: false,
   shuffle: false,
@@ -219,7 +219,7 @@ function loadState() {
      * the welcome state until the user picks a category. Per-category flip
      * progress IS still restored below, so picking the same category later
      * brings their learned cards back. */
-    state.mode = ["dictionary", "cards", "quiz", "kana"].includes(parsed.mode) ? parsed.mode : "cards";
+    state.mode = ["dictionary", "cards", "quiz", "kana"].includes(parsed.mode) ? parsed.mode : "dictionary";
     state.searchQuery = typeof parsed.searchQuery === "string" ? parsed.searchQuery : "";
     state.filterUnlearnedOnly = !!parsed.filterUnlearnedOnly;
     state.shuffle = !!parsed.shuffle;

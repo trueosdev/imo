@@ -92,12 +92,12 @@
 
   <div class="mode-switch" role="tablist" aria-label="Study mode">
     <!-- data-pos drives the sliding pill: 0–3 = Dictionary, Cards, Quiz, Kana.
-         Default is 1 (Cards) since that's the default state.mode. -->
-    <span class="mode-pill" id="mode-pill" data-pos="1" aria-hidden="true"></span>
-    <button class="mode-btn" id="mode-dictionary" role="tab" aria-selected="false" type="button">
+         Default is 0 (Dictionary) — matches initial state.mode for new users. -->
+    <span class="mode-pill" id="mode-pill" data-pos="0" aria-hidden="true"></span>
+    <button class="mode-btn active" id="mode-dictionary" role="tab" aria-selected="true" type="button">
       <svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>Dictionary
     </button>
-    <button class="mode-btn active" id="mode-cards" role="tab" aria-selected="true" type="button">
+    <button class="mode-btn" id="mode-cards" role="tab" aria-selected="false" type="button">
       <svg class="lucide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>Cards
     </button>
     <button class="mode-btn" id="mode-quiz" role="tab" aria-selected="false" type="button">
